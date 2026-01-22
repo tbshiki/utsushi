@@ -31,12 +31,16 @@ const UI = (function () {
       resultsSection: document.getElementById('results-section'),
       diffAB: document.getElementById('diff-ab'),
       diffAC: document.getElementById('diff-ac'),
+      diffBC: document.getElementById('diff-bc'),
       diffABLeft: document.getElementById('diff-ab-left'),
       diffABRight: document.getElementById('diff-ab-right'),
       diffACLeft: document.getElementById('diff-ac-left'),
       diffACRight: document.getElementById('diff-ac-right'),
+      diffBCLeft: document.getElementById('diff-bc-left'),
+      diffBCRight: document.getElementById('diff-bc-right'),
       statsAB: document.getElementById('stats-ab'),
       statsAC: document.getElementById('stats-ac'),
+      statsBC: document.getElementById('stats-bc'),
       charCounts: {
         a: document.querySelector('[data-count="a"]'),
         b: document.querySelector('[data-count="b"]'),
@@ -87,7 +91,8 @@ const UI = (function () {
   function setupSyncScroll() {
     const pairs = [
       ['diff-ab-left', 'diff-ab-right'],
-      ['diff-ac-left', 'diff-ac-right']
+      ['diff-ac-left', 'diff-ac-right'],
+      ['diff-bc-left', 'diff-bc-right']
     ];
 
     pairs.forEach(([leftId, rightId]) => {
@@ -156,6 +161,15 @@ const UI = (function () {
       elements.diffAC.classList.remove('hidden');
     } else {
       elements.diffAC.classList.add('hidden');
+    }
+
+    // B vs C の比較
+    if (textB.trim() && textC.trim()) {
+      const resultBC = DiffEngine.compareLines(textB, textC);
+      renderDiff('bc', resultBC);
+      elements.diffBC.classList.remove('hidden');
+    } else {
+      elements.diffBC.classList.add('hidden');
     }
 
     // 結果エリアにスクロール

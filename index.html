@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'none';">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'none';">
     <meta name="description" content="utsushi - 完全ローカル処理のテキスト差分比較ツール。サーバーに送信せず、ブラウザ内で安全に比較。">
     <meta property="og:title" content="utsushi - テキスト差分比較ツール">
     <meta property="og:description" content="複数テキストをブラウザ内で比較。完全ローカル処理でプライバシー保護。">
@@ -11,9 +13,12 @@
     <title>utsushi - テキスト差分比較ツール</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <header class="header">
         <div class="header-content">
@@ -22,10 +27,6 @@
                 utsushi
             </h1>
             <p class="tagline">テキスト差分比較ツール</p>
-        </div>
-        <div class="security-badge">
-            <span class="badge-icon">🔒</span>
-            <span class="badge-text">完全ローカル処理</span>
         </div>
     </header>
 
@@ -140,12 +141,30 @@
                     </div>
                     <div class="diff-panels">
                         <div class="diff-panel" data-side="left">
-                            <div class="diff-panel-header">Text A（基準）</div>
+                            <div class="diff-panel-header">Text A</div>
                             <div class="diff-content" id="diff-ac-left"></div>
                         </div>
                         <div class="diff-panel" data-side="right">
                             <div class="diff-panel-header">Text C</div>
                             <div class="diff-content" id="diff-ac-right"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- B vs C -->
+                <div class="diff-pair hidden" id="diff-bc">
+                    <div class="diff-pair-header">
+                        <span class="diff-pair-title">Text B vs Text C</span>
+                        <div class="diff-stats" id="stats-bc"></div>
+                    </div>
+                    <div class="diff-panels">
+                        <div class="diff-panel" data-side="left">
+                            <div class="diff-panel-header">Text B</div>
+                            <div class="diff-content" id="diff-bc-left"></div>
+                        </div>
+                        <div class="diff-panel" data-side="right">
+                            <div class="diff-panel-header">Text C</div>
+                            <div class="diff-content" id="diff-bc-right"></div>
                         </div>
                     </div>
                 </div>
@@ -176,4 +195,5 @@
     <script src="ui.js"></script>
     <script src="main.js"></script>
 </body>
+
 </html>
