@@ -15,7 +15,6 @@ const UI = (function () {
   ];
 
   // 現在表示中のパネル数
-  let activePanelCount = 2;
   const MAX_PANELS = 4;
 
   // DOM キャッシュ
@@ -110,15 +109,14 @@ const UI = (function () {
    * パネル追加
    */
   function handleAddPanel() {
-    if (activePanelCount >= MAX_PANELS) return;
+    const nextPanel = PANELS.find(p => !document.querySelector(`[data-panel="${p.id}"]`));
 
-    const nextPanel = PANELS[activePanelCount];
+    if (!nextPanel) return;
+
     const panelHtml = createPanelHtml(nextPanel);
 
     // 追加ボタンの前にパネルを挿入
     elements.addPanelContainer.insertAdjacentHTML('beforebegin', panelHtml);
-
-    activePanelCount++;
 
     // イベント再設定
     setupPanelEvents();
@@ -133,7 +131,6 @@ const UI = (function () {
     const panel = document.querySelector(`[data-panel="${panelId}"]`);
     if (panel) {
       panel.remove();
-      activePanelCount--;
       updatePanelLayout();
       updateAddButton();
     }
@@ -171,15 +168,16 @@ const UI = (function () {
    * パネルレイアウト更新
    */
   function updatePanelLayout() {
-    const panelCount = activePanelCount + 1; // +1 for add button
-    elements.inputPanels.style.gridTemplateColumns = `repeat(${Math.min(activePanelCount, 4)}, 1fr)`;
+    const currentPanels = document.querySelectorAll('.input-panel').length;
+    elements.inputPanels.style.gridTemplateColumns = `repeat(${Math.min(currentPanels, 3)}, 1fr)`;
   }
 
   /**
    * 追加ボタン更新
    */
   function updateAddButton() {
-    if (activePanelCount >= MAX_PANELS) {
+    const currentPanels = document.querySelectorAll('.input-panel').length;
+    if (currentPanels >= MAX_PANELS) {
       elements.addPanelContainer.style.display = 'none';
     } else {
       elements.addPanelContainer.style.display = 'flex';
@@ -192,7 +190,7 @@ const UI = (function () {
   function handleCompare() {
     // アクティブなパネルのテキストを取得
     const texts = {};
-    PANELS.slice(0, activePanelCount).forEach(panel => {
+    PANELS.forEach(panel => {
       const textarea = document.getElementById(`text-${panel.id}`);
       if (textarea) {
         texts[panel.id] = textarea.value;

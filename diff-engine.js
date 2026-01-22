@@ -237,23 +237,7 @@ const DiffEngine = (function () {
         return { left: leftParts, right: rightParts };
     }
 
-    /**
-     * 複数テキストを基準テキストと比較
-     * @param {string} baseText - 基準テキスト (A)
-     * @param {string[]} compareTexts - 比較テキストの配列 [B, C, ...]
-     * @returns {Object[]} 各比較の差分結果
-     */
-    function compareMultiple(baseText, compareTexts) {
-        return compareTexts.map((text, index) => {
-            if (!text || text.trim() === '') {
-                return null;
-            }
-            return {
-                label: String.fromCharCode(66 + index), // B, C, D...
-                diff: compareLines(baseText, text)
-            };
-        }).filter(result => result !== null);
-    }
+
 
     /**
      * 行の変更タイプを判定（より詳細な分析）
