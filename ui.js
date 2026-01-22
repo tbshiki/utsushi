@@ -199,17 +199,11 @@ const UI = (function () {
       }
     });
 
-    // 基準テキスト（イ）チェック
-    if (!texts.i || !texts.i.trim()) {
-      showError('基準テキスト（イ）を入力してください');
-      document.getElementById('text-i').focus();
-      return;
-    }
+    // 有効なテキストを持つパネルを抽出
+    const activePanels = Object.keys(texts).filter(id => texts[id] && texts[id].trim());
 
-    // 少なくとも1つの比較テキストが必要
-    const compareTexts = Object.entries(texts).filter(([id, text]) => id !== 'i' && text.trim());
-    if (compareTexts.length === 0) {
-      showError('比較するテキスト（ロ、ハ、ニ）を少なくとも1つ入力してください');
+    if (activePanels.length < 2) {
+      showError('比較するには少なくとも2つのテキストを入力してください');
       return;
     }
 
@@ -218,8 +212,7 @@ const UI = (function () {
     elements.resultsSection.classList.remove('hidden');
 
     // 全ペアの比較を生成
-    const panelIds = Object.keys(texts).filter(id => texts[id].trim());
-    const pairs = generatePairs(panelIds);
+    const pairs = generatePairs(activePanels);
 
     pairs.forEach(([id1, id2]) => {
       const result = DiffEngine.compareLines(texts[id1], texts[id2]);
@@ -275,7 +268,7 @@ const UI = (function () {
         </div>
         <div class="diff-panels">
           <div class="diff-panel" data-side="left">
-            <div class="diff-panel-header">${name1}${id1 === 'i' ? '（基準）' : ''}</div>
+            <div class="diff-panel-header">${name1}</div>
             <div class="diff-content" id="diff-${pairId}-left">${renderLines(result.left)}</div>
           </div>
           <div class="diff-panel" data-side="right">
@@ -379,9 +372,13 @@ const UI = (function () {
    * HTMLエスケープ
    */
   function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    if (!text) return '';
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   /**
