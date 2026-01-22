@@ -264,6 +264,82 @@ body {
     color: var(--text-muted);
 }
 
+/* Panel Actions */
+.panel-actions {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+.btn-remove-panel {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    font-size: 0.8rem;
+}
+
+.btn-remove-panel:hover {
+    background: var(--diff-removed-bg);
+    color: var(--diff-removed-text);
+}
+
+/* Add Panel Button */
+.add-panel-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    background: var(--bg-secondary);
+    border: 2px dashed var(--border-primary);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+}
+
+.add-panel-container:hover {
+    border-color: var(--accent-primary);
+    background: var(--accent-glow);
+}
+
+.btn-add-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-add-panel:hover {
+    color: var(--accent-primary);
+}
+
+.add-icon {
+    font-size: 2rem;
+    font-weight: 300;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+}
+
+.add-text {
+    font-size: 0.875rem;
+}
+
 /* Action Bar */
 .action-bar {
     display: flex;

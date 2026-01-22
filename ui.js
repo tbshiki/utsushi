@@ -1,10 +1,22 @@
 /**
  * utsushi - UI Controller
- * 差分表示とUI制御
+ * 差分表示とUI制御（イロハニ対応・動的パネル）
  */
 
 const UI = (function () {
   'use strict';
+
+  // パネル設定
+  const PANELS = [
+    { id: 'i', name: 'イ', isBase: true },
+    { id: 'ro', name: 'ロ', isBase: false },
+    { id: 'ha', name: 'ハ', isBase: false },
+    { id: 'ni', name: 'ニ', isBase: false }
+  ];
+
+  // 現在表示中のパネル数
+  let activePanelCount = 2;
+  const MAX_PANELS = 4;
 
   // DOM キャッシュ
   let elements = {};
@@ -15,7 +27,7 @@ const UI = (function () {
   function init() {
     cacheElements();
     setupEventListeners();
-    setupSyncScroll();
+    updatePanelLayout();
   }
 
   /**
@@ -23,30 +35,13 @@ const UI = (function () {
    */
   function cacheElements() {
     elements = {
-      textA: document.getElementById('text-a'),
-      textB: document.getElementById('text-b'),
-      textC: document.getElementById('text-c'),
+      inputPanels: document.getElementById('input-panels'),
+      addPanelContainer: document.getElementById('add-panel-container'),
+      btnAddPanel: document.getElementById('btn-add-panel'),
       btnCompare: document.getElementById('btn-compare'),
       btnClearAll: document.getElementById('btn-clear-all'),
       resultsSection: document.getElementById('results-section'),
-      diffAB: document.getElementById('diff-ab'),
-      diffAC: document.getElementById('diff-ac'),
-      diffBC: document.getElementById('diff-bc'),
-      diffABLeft: document.getElementById('diff-ab-left'),
-      diffABRight: document.getElementById('diff-ab-right'),
-      diffACLeft: document.getElementById('diff-ac-left'),
-      diffACRight: document.getElementById('diff-ac-right'),
-      diffBCLeft: document.getElementById('diff-bc-left'),
-      diffBCRight: document.getElementById('diff-bc-right'),
-      statsAB: document.getElementById('stats-ab'),
-      statsAC: document.getElementById('stats-ac'),
-      statsBC: document.getElementById('stats-bc'),
-      charCounts: {
-        a: document.querySelector('[data-count="a"]'),
-        b: document.querySelector('[data-count="b"]'),
-        c: document.querySelector('[data-count="c"]')
-      },
-      clearButtons: document.querySelectorAll('.btn-clear')
+      diffContainer: document.getElementById('diff-container')
     };
   }
 
@@ -60,24 +55,14 @@ const UI = (function () {
     // 全クリアボタン
     elements.btnClearAll.addEventListener('click', handleClearAll);
 
-    // 個別クリアボタン
-    elements.clearButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const target = e.currentTarget.dataset.target;
-        handleClear(target);
-      });
-    });
+    // パネル追加ボタン
+    elements.btnAddPanel.addEventListener('click', handleAddPanel);
 
-    // 文字カウント
-    ['textA', 'textB', 'textC'].forEach(key => {
-      elements[key].addEventListener('input', (e) => {
-        updateCharCount(key.replace('text', '').toLowerCase(), e.target.value);
-      });
-    });
+    // 既存パネルのイベント設定
+    setupPanelEvents();
 
     // キーボードショートカット
     document.addEventListener('keydown', (e) => {
-      // Ctrl + Enter で比較
       if (e.ctrlKey && e.key === 'Enter') {
         e.preventDefault();
         handleCompare();
@@ -86,18 +71,223 @@ const UI = (function () {
   }
 
   /**
+   * パネルのイベント設定
+   */
+  function setupPanelEvents() {
+    // クリアボタン
+    document.querySelectorAll('.btn-clear').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const target = e.currentTarget.dataset.target;
+        handleClear(target);
+      });
+    });
+
+    // 削除ボタン（ハ、ニ用）
+    document.querySelectorAll('.btn-remove-panel').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const panelId = e.currentTarget.dataset.panel;
+        handleRemovePanel(panelId);
+      });
+    });
+
+    // 文字カウント
+    document.querySelectorAll('.text-input').forEach(textarea => {
+      textarea.addEventListener('input', (e) => {
+        const panelId = e.target.id.replace('text-', '');
+        updateCharCount(panelId, e.target.value);
+      });
+    });
+  }
+
+  /**
+   * パネル追加
+   */
+  function handleAddPanel() {
+    if (activePanelCount >= MAX_PANELS) return;
+
+    const nextPanel = PANELS[activePanelCount];
+    const panelHtml = createPanelHtml(nextPanel);
+
+    // 追加ボタンの前にパネルを挿入
+    elements.addPanelContainer.insertAdjacentHTML('beforebegin', panelHtml);
+
+    activePanelCount++;
+
+    // イベント再設定
+    setupPanelEvents();
+    updatePanelLayout();
+    updateAddButton();
+  }
+
+  /**
+   * パネル削除
+   */
+  function handleRemovePanel(panelId) {
+    const panel = document.querySelector(`[data-panel="${panelId}"]`);
+    if (panel) {
+      panel.remove();
+      activePanelCount--;
+      updatePanelLayout();
+      updateAddButton();
+    }
+  }
+
+  /**
+   * パネルHTML生成
+   */
+  function createPanelHtml(panel) {
+    return `
+      <div class="input-panel" data-panel="${panel.id}">
+        <div class="panel-header">
+          <label class="panel-label">
+            <span class="label-badge compare">比較</span>
+            ${panel.name}
+          </label>
+          <div class="panel-actions">
+            <button class="btn-clear" data-target="${panel.id}" title="クリア">
+              <span>×</span>
+            </button>
+            <button class="btn-remove-panel" data-panel="${panel.id}" title="パネル削除">
+              <span>🗑</span>
+            </button>
+          </div>
+        </div>
+        <textarea id="text-${panel.id}" class="text-input" placeholder="比較するテキストを入力..."></textarea>
+        <div class="panel-footer">
+          <span class="char-count" data-count="${panel.id}">0 文字</span>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * パネルレイアウト更新
+   */
+  function updatePanelLayout() {
+    const panelCount = activePanelCount + 1; // +1 for add button
+    elements.inputPanels.style.gridTemplateColumns = `repeat(${Math.min(activePanelCount, 4)}, 1fr)`;
+  }
+
+  /**
+   * 追加ボタン更新
+   */
+  function updateAddButton() {
+    if (activePanelCount >= MAX_PANELS) {
+      elements.addPanelContainer.style.display = 'none';
+    } else {
+      elements.addPanelContainer.style.display = 'flex';
+    }
+  }
+
+  /**
+   * 比較実行
+   */
+  function handleCompare() {
+    // アクティブなパネルのテキストを取得
+    const texts = {};
+    PANELS.slice(0, activePanelCount).forEach(panel => {
+      const textarea = document.getElementById(`text-${panel.id}`);
+      if (textarea) {
+        texts[panel.id] = textarea.value;
+      }
+    });
+
+    // 基準テキスト（イ）チェック
+    if (!texts.i || !texts.i.trim()) {
+      showError('基準テキスト（イ）を入力してください');
+      document.getElementById('text-i').focus();
+      return;
+    }
+
+    // 少なくとも1つの比較テキストが必要
+    const compareTexts = Object.entries(texts).filter(([id, text]) => id !== 'i' && text.trim());
+    if (compareTexts.length === 0) {
+      showError('比較するテキスト（ロ、ハ、ニ）を少なくとも1つ入力してください');
+      return;
+    }
+
+    // 結果表示エリアをクリアして表示
+    elements.diffContainer.innerHTML = '';
+    elements.resultsSection.classList.remove('hidden');
+
+    // 全ペアの比較を生成
+    const panelIds = Object.keys(texts).filter(id => texts[id].trim());
+    const pairs = generatePairs(panelIds);
+
+    pairs.forEach(([id1, id2]) => {
+      const result = DiffEngine.compareLines(texts[id1], texts[id2]);
+      const pairHtml = createDiffPairHtml(id1, id2, result);
+      elements.diffContainer.insertAdjacentHTML('beforeend', pairHtml);
+    });
+
+    // 同期スクロール設定
+    setupSyncScroll();
+
+    // 結果エリアにスクロール
+    elements.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /**
+   * パネルIDからラベル名を取得
+   */
+  function getPanelName(id) {
+    const panel = PANELS.find(p => p.id === id);
+    return panel ? panel.name : id;
+  }
+
+  /**
+   * ペア生成（全組み合わせ）
+   */
+  function generatePairs(ids) {
+    const pairs = [];
+    for (let i = 0; i < ids.length; i++) {
+      for (let j = i + 1; j < ids.length; j++) {
+        pairs.push([ids[i], ids[j]]);
+      }
+    }
+    return pairs;
+  }
+
+  /**
+   * 差分ペアHTML生成
+   */
+  function createDiffPairHtml(id1, id2, result) {
+    const name1 = getPanelName(id1);
+    const name2 = getPanelName(id2);
+    const pairId = `${id1}-${id2}`;
+
+    return `
+      <div class="diff-pair" id="diff-${pairId}">
+        <div class="diff-pair-header">
+          <span class="diff-pair-title">${name1} vs ${name2}</span>
+          <div class="diff-stats">
+            <span class="stat added">+${result.stats.added}</span>
+            <span class="stat removed">-${result.stats.removed}</span>
+            ${result.stats.changed > 0 ? `<span class="stat changed">~${result.stats.changed}</span>` : ''}
+          </div>
+        </div>
+        <div class="diff-panels">
+          <div class="diff-panel" data-side="left">
+            <div class="diff-panel-header">${name1}${id1 === 'i' ? '（基準）' : ''}</div>
+            <div class="diff-content" id="diff-${pairId}-left">${renderLines(result.left)}</div>
+          </div>
+          <div class="diff-panel" data-side="right">
+            <div class="diff-panel-header">${name2}</div>
+            <div class="diff-content" id="diff-${pairId}-right">${renderLines(result.right)}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
    * 同期スクロール設定
    */
   function setupSyncScroll() {
-    const pairs = [
-      ['diff-ab-left', 'diff-ab-right'],
-      ['diff-ac-left', 'diff-ac-right'],
-      ['diff-bc-left', 'diff-bc-right']
-    ];
-
-    pairs.forEach(([leftId, rightId]) => {
-      const left = document.getElementById(leftId);
-      const right = document.getElementById(rightId);
+    const diffPairs = document.querySelectorAll('.diff-pair');
+    diffPairs.forEach(pair => {
+      const left = pair.querySelector('.diff-content[id$="-left"]');
+      const right = pair.querySelector('.diff-content[id$="-right"]');
 
       if (left && right) {
         let isScrolling = false;
@@ -122,87 +312,7 @@ const UI = (function () {
   }
 
   /**
-   * 比較実行
-   */
-  function handleCompare() {
-    const textA = elements.textA.value;
-    const textB = elements.textB.value;
-    const textC = elements.textC.value;
-
-    // 最低限 A と B が必要
-    if (!textA.trim()) {
-      showError('基準テキスト（Text A）を入力してください');
-      elements.textA.focus();
-      return;
-    }
-
-    if (!textB.trim() && !textC.trim()) {
-      showError('比較するテキスト（Text B または C）を入力してください');
-      elements.textB.focus();
-      return;
-    }
-
-    // 結果表示エリアを表示
-    elements.resultsSection.classList.remove('hidden');
-
-    // A vs B の比較
-    if (textB.trim()) {
-      const resultAB = DiffEngine.compareLines(textA, textB);
-      renderDiff('ab', resultAB);
-      elements.diffAB.classList.remove('hidden');
-    } else {
-      elements.diffAB.classList.add('hidden');
-    }
-
-    // A vs C の比較
-    if (textC.trim()) {
-      const resultAC = DiffEngine.compareLines(textA, textC);
-      renderDiff('ac', resultAC);
-      elements.diffAC.classList.remove('hidden');
-    } else {
-      elements.diffAC.classList.add('hidden');
-    }
-
-    // B vs C の比較
-    if (textB.trim() && textC.trim()) {
-      const resultBC = DiffEngine.compareLines(textB, textC);
-      renderDiff('bc', resultBC);
-      elements.diffBC.classList.remove('hidden');
-    } else {
-      elements.diffBC.classList.add('hidden');
-    }
-
-    // 結果エリアにスクロール
-    elements.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  /**
-   * 差分をレンダリング
-   * @param {string} pairId - 'ab' または 'ac'
-   * @param {Object} result - 差分結果
-   */
-  function renderDiff(pairId, result) {
-    const leftContainer = document.getElementById(`diff-${pairId}-left`);
-    const rightContainer = document.getElementById(`diff-${pairId}-right`);
-    const statsContainer = document.getElementById(`stats-${pairId}`);
-
-    // 統計情報を表示
-    statsContainer.innerHTML = `
-            <span class="stat added">+${result.stats.added}</span>
-            <span class="stat removed">-${result.stats.removed}</span>
-        `;
-
-    // 左側（基準テキスト）をレンダリング
-    leftContainer.innerHTML = renderLines(result.left);
-
-    // 右側（比較テキスト）をレンダリング
-    rightContainer.innerHTML = renderLines(result.right);
-  }
-
-  /**
    * 行をHTML化
-   * @param {Array} lines - 行情報の配列
-   * @returns {string} HTML文字列
    */
   function renderLines(lines) {
     if (lines.length === 0) {
@@ -213,7 +323,6 @@ const UI = (function () {
       const typeClass = getLineClass(line.type);
       const lineNumDisplay = line.lineNum !== null ? line.lineNum : '';
 
-      // 単語レベル差分があればそれを使用、なければ通常のエスケープ
       let content;
       if (line.wordDiff && line.wordDiff.length > 0) {
         content = renderWordDiff(line.wordDiff);
@@ -222,18 +331,16 @@ const UI = (function () {
       }
 
       return `
-                <div class="diff-line ${typeClass}">
-                    <span class="line-number">${lineNumDisplay}</span>
-                    <span class="line-content">${content || '&nbsp;'}</span>
-                </div>
-            `;
+        <div class="diff-line ${typeClass}">
+          <span class="line-number">${lineNumDisplay}</span>
+          <span class="line-content">${content || '&nbsp;'}</span>
+        </div>
+      `;
     }).join('');
   }
 
   /**
    * 単語レベル差分をHTML化
-   * @param {Array} wordDiff - 単語差分の配列
-   * @returns {string} HTML文字列
    */
   function renderWordDiff(wordDiff) {
     return wordDiff.map(part => {
@@ -250,8 +357,6 @@ const UI = (function () {
 
   /**
    * 行タイプからCSSクラスを取得
-   * @param {string} type
-   * @returns {string}
    */
   function getLineClass(type) {
     switch (type) {
@@ -265,8 +370,6 @@ const UI = (function () {
 
   /**
    * HTMLエスケープ
-   * @param {string} text
-   * @returns {string}
    */
   function escapeHtml(text) {
     const div = document.createElement('div');
@@ -276,24 +379,24 @@ const UI = (function () {
 
   /**
    * 文字カウント更新
-   * @param {string} target - 'a', 'b', 'c'
-   * @param {string} value
    */
-  function updateCharCount(target, value) {
-    const count = value.length;
-    const lines = value.split('\n').length;
-    elements.charCounts[target].textContent = `${count} 文字 / ${lines} 行`;
+  function updateCharCount(panelId, value) {
+    const countEl = document.querySelector(`[data-count="${panelId}"]`);
+    if (countEl) {
+      const count = value.length;
+      const lines = value.split('\n').length;
+      countEl.textContent = `${count} 文字 / ${lines} 行`;
+    }
   }
 
   /**
    * 個別クリア
-   * @param {string} target - 'a', 'b', 'c'
    */
-  function handleClear(target) {
-    const key = `text${target.toUpperCase()}`;
-    if (elements[key]) {
-      elements[key].value = '';
-      updateCharCount(target, '');
+  function handleClear(panelId) {
+    const textarea = document.getElementById(`text-${panelId}`);
+    if (textarea) {
+      textarea.value = '';
+      updateCharCount(panelId, '');
     }
   }
 
@@ -301,27 +404,17 @@ const UI = (function () {
    * 全クリア
    */
   function handleClearAll() {
-    ['a', 'b', 'c'].forEach(target => {
-      handleClear(target);
+    PANELS.forEach(panel => {
+      handleClear(panel.id);
     });
     elements.resultsSection.classList.add('hidden');
   }
 
   /**
-   * エラー表示（簡易版）
-   * @param {string} message
+   * エラー表示
    */
   function showError(message) {
-    // シンプルなアラート（将来的にはトースト通知に）
     alert(message);
-  }
-
-  /**
-   * 成功表示（簡易版）
-   * @param {string} message
-   */
-  function showSuccess(message) {
-    console.log('✓', message);
   }
 
   // Public API
@@ -329,8 +422,8 @@ const UI = (function () {
     init,
     handleCompare,
     handleClearAll,
-    showError,
-    showSuccess
+    handleAddPanel,
+    showError
   };
 })();
 
