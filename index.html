@@ -59,7 +59,13 @@
                     </div>
                     <textarea id="text-i" class="text-input" placeholder="テキストを入力..."></textarea>
                     <div class="panel-footer">
-                        <span class="char-count" data-count="i">0 文字</span>
+                        <div class="char-count" data-count="i">
+                            <span class="count-item"><span class="count-value">0</span> 文字</span>
+                            <span class="count-separator">·</span>
+                            <span class="count-item"><span class="count-value">0</span> 単語</span>
+                            <span class="count-separator">·</span>
+                            <span class="count-item"><span class="count-value">1</span> 行</span>
+                        </div>
                     </div>
                 </div>
 
@@ -76,7 +82,13 @@
                     </div>
                     <textarea id="text-ro" class="text-input" placeholder="比較するテキストを入力..."></textarea>
                     <div class="panel-footer">
-                        <span class="char-count" data-count="ro">0 文字</span>
+                        <div class="char-count" data-count="ro">
+                            <span class="count-item"><span class="count-value">0</span> 文字</span>
+                            <span class="count-separator">·</span>
+                            <span class="count-item"><span class="count-value">0</span> 単語</span>
+                            <span class="count-separator">·</span>
+                            <span class="count-item"><span class="count-value">1</span> 行</span>
+                        </div>
                     </div>
                 </div>
 
@@ -128,8 +140,6 @@
             <div class="footer-main">
                 <div class="footer-info">
                     <span>utsushi v0.1.0</span>
-                    <span class="footer-separator">·</span>
-                    <span>MIT License</span>
                 </div>
                 <button id="btn-privacy-toggle" class="btn-privacy-toggle active">
                     🔒 プライバシー
@@ -141,7 +151,6 @@
                     <li>✅ 本ツールはすべてローカル処理です</li>
                     <li>✅ 入力内容はサーバーに送信されません</li>
                     <li>⚠️ 入力データの責任は利用者にあります</li>
-                    <li>🎨 テーマはシステム設定に従います</li>
                 </ul>
             </div>
         </div>

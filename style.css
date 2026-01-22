@@ -304,6 +304,27 @@ body {
 .char-count {
     font-size: 0.75rem;
     color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+}
+
+.count-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.count-value {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.count-separator {
+    color: var(--border-primary);
+    margin: 0 2px;
 }
 
 /* Panel Actions */

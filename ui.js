@@ -198,7 +198,13 @@ const UI = (function () {
         </div>
         <textarea id="text-${panel.id}" class="text-input" placeholder="比較するテキストを入力..."></textarea>
         <div class="panel-footer">
-          <span class="char-count" data-count="${panel.id}">0 文字</span>
+          <div class="char-count" data-count="${panel.id}">
+            <span class="count-item"><span class="count-value">0</span> 文字</span>
+            <span class="count-separator">·</span>
+            <span class="count-item"><span class="count-value">0</span> 単語</span>
+            <span class="count-separator">·</span>
+            <span class="count-item"><span class="count-value">1</span> 行</span>
+          </div>
         </div>
       </div>
     `;
@@ -421,10 +427,55 @@ const UI = (function () {
   function updateCharCount(panelId, value) {
     const countEl = document.querySelector(`[data-count="${panelId}"]`);
     if (countEl) {
-      const count = value.length;
-      const lines = value.split('\n').length;
-      countEl.textContent = `${count} 文字 / ${lines} 行`;
+      const stats = calculateTextStats(value);
+      countEl.innerHTML = `
+        <span class="count-item"><span class="count-value">${stats.chars}</span> 文字</span>
+        <span class="count-separator">·</span>
+        <span class="count-item"><span class="count-value">${stats.words}</span> 単語</span>
+        <span class="count-separator">·</span>
+        <span class="count-item"><span class="count-value">${stats.lines}</span> 行</span>
+      `;
     }
+  }
+
+  /**
+   * テキスト統計を計算
+   * @param {string} text - テキスト
+   * @returns {Object} 統計情報
+   */
+  function calculateTextStats(text) {
+    // 文字数（改行除く）
+    const chars = text.replace(/\n/g, '').length;
+
+    // 行数
+    const lines = text ? text.split('\n').length : 1;
+
+    // 単語数（日本語・英語両対応）
+    // 英単語: スペース区切り
+    // 日本語: 文字単位でカウント（簡易的）
+    const words = countWords(text);
+
+    return { chars, lines, words };
+  }
+
+  /**
+   * 単語数をカウント（日本語・英語対応）
+   * @param {string} text - テキスト
+   * @returns {number} 単語数
+   */
+  function countWords(text) {
+    if (!text || !text.trim()) return 0;
+
+    // 英語の単語（スペース区切り）
+    const englishWords = text.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?/g) || [];
+
+    // 日本語の文字（ひらがな・カタカナ・漢字）
+    const japaneseChars = text.match(/[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g) || [];
+
+    // 数字の連続
+    const numbers = text.match(/\d+/g) || [];
+
+    return englishWords.length + japaneseChars.length + numbers.length;
   }
 
   /**
