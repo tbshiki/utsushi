@@ -276,6 +276,14 @@ const DiffEngine = (function () {
 
         if (maxLen === 0) return 1;
 
+        // パフォーマンスガード: 文字列が長すぎる場合は簡易判定または類似計算をスキップ
+        // diffCharsはO(N^2)になりうるため、2000文字以上の場合は計算コストが高い
+        if (maxLen > 2000) {
+            // 簡易的に長さの比率だけで返す（詳細比較はコスト高のため）
+            const minLen = Math.min(len1, len2);
+            return minLen / maxLen;
+        }
+
         // 単純な文字一致率
         const diff = Diff.diffChars(str1, str2);
         let matchCount = 0;

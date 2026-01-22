@@ -320,7 +320,7 @@ const UI = (function () {
 
   /**
    * 同期スクロール設定
-   * 水平スクロールも同期するように修正
+   * マウスオーバーしている側をマスターとして同期
    */
   function setupSyncScroll() {
     const diffPairs = document.querySelectorAll('.diff-pair');
@@ -329,19 +329,18 @@ const UI = (function () {
       const right = pair.querySelector('.diff-content[id$="-right"]');
 
       if (left && right) {
-        let isScrolling = false;
-
+        // 同期処理を共通化
         const sync = (source, target) => {
-          if (!isScrolling) {
-            isScrolling = true;
+          // マウスが乗っている側のみをマスターとする（ループ防止）
+          if (source.matches(':hover')) {
             target.scrollTop = source.scrollTop;
             target.scrollLeft = source.scrollLeft;
-            requestAnimationFrame(() => { isScrolling = false; });
           }
         };
 
-        left.addEventListener('scroll', () => sync(left, right));
-        right.addEventListener('scroll', () => sync(right, left));
+        // スクロールイベント
+        left.addEventListener('scroll', () => requestAnimationFrame(() => sync(left, right)));
+        right.addEventListener('scroll', () => requestAnimationFrame(() => sync(right, left)));
       }
     });
   }

@@ -799,6 +799,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    pointer-events: none;
+    /* コンテナ自体はクリックを透過 */
 }
 
 .toast {
@@ -815,6 +817,8 @@ body {
     transform: translateY(20px);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     max-width: 350px;
+    pointer-events: auto;
+    /* トースト自体はクリック可能 */
 }
 
 .toast.show {
