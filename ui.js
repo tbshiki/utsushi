@@ -45,7 +45,11 @@ const UI = (function () {
       btnPrivacyToggle: document.getElementById('btn-privacy-toggle'),
       privacyDetails: document.getElementById('privacy-details'),
       btnThemeToggle: document.getElementById('btn-theme-toggle'),
-      toastContainer: document.getElementById('toast-container')
+      toastContainer: document.getElementById('toast-container'),
+      // Privacy Policy Modal
+      btnPrivacyPolicy: document.getElementById('btn-privacy-policy'),
+      privacyModal: document.getElementById('privacy-modal'),
+      btnModalClose: document.getElementById('btn-modal-close')
     };
   }
 
@@ -70,6 +74,29 @@ const UI = (function () {
     // テーマ切り替えボタン
     if (elements.btnThemeToggle) {
       elements.btnThemeToggle.addEventListener('click', handleThemeToggle);
+    }
+
+    // プライバシーポリシーモーダル
+    if (elements.btnPrivacyPolicy) {
+      elements.btnPrivacyPolicy.addEventListener('click', openPrivacyModal);
+    }
+    // フッター内のインラインリンクからもモーダルを開ける
+    const btnPrivacyPolicyInline = document.getElementById('btn-privacy-policy-inline');
+    if (btnPrivacyPolicyInline) {
+      btnPrivacyPolicyInline.addEventListener('click', openPrivacyModal);
+    }
+    if (elements.btnModalClose) {
+      elements.btnModalClose.addEventListener('click', closePrivacyModal);
+    }
+    if (elements.privacyModal) {
+      // 背景クリックで閉じる
+      elements.privacyModal.querySelector('.modal-backdrop')?.addEventListener('click', closePrivacyModal);
+      // Escキーで閉じる
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !elements.privacyModal.hidden) {
+          closePrivacyModal();
+        }
+      });
     }
 
     // イベントデリゲーション: 入力パネル内のイベントを集約
@@ -188,7 +215,7 @@ const UI = (function () {
   function createPanelHtml(panel) {
     return `
       <div class="input-panel" data-panel="${panel.id}">
-        <textarea id="text-${panel.id}" class="text-input" placeholder="比較するテキストを入力..."></textarea>
+        <textarea id="text-${panel.id}" class="text-input" placeholder="比較するテキストを入力..." data-clarity-mask="true"></textarea>
         <div class="panel-header">
           <label class="panel-label" for="text-${panel.id}">
             <span class="label-badge compare">比較</span>
@@ -533,6 +560,28 @@ const UI = (function () {
       elements.btnPrivacyToggle.classList.remove('active');
       elements.btnPrivacyToggle.setAttribute('aria-expanded', 'false');
     }
+  }
+
+  /**
+   * プライバシーポリシーモーダルを開く
+   */
+  function openPrivacyModal() {
+    if (!elements.privacyModal) return;
+    elements.privacyModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    // フォーカスをモーダルに移動
+    elements.btnModalClose?.focus();
+  }
+
+  /**
+   * プライバシーポリシーモーダルを閉じる
+   */
+  function closePrivacyModal() {
+    if (!elements.privacyModal) return;
+    elements.privacyModal.hidden = true;
+    document.body.style.overflow = '';
+    // フォーカスを元のボタンに戻す
+    elements.btnPrivacyPolicy?.focus();
   }
 
   /**
