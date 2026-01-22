@@ -61,7 +61,28 @@ git push -u origin main
 
 ### 環境変数
 
-このプロジェクトでは環境変数は使用しません。
+アナリティクス機能を有効にするには、以下の環境変数を設定してください：
+
+| 変数名 | 説明 | 例 |
+|--------|------|-----|
+| `GA_MEASUREMENT_ID` | Google Analytics 測定ID | `G-XXXXXXXXXX` |
+| `CLARITY_PROJECT_ID` | Microsoft Clarity プロジェクトID | `abcdefghij` |
+
+**Cloudflare Pages での設定方法：**
+1. Cloudflare Dashboard > Pages > utsushi プロジェクト
+2. 「設定」タブ > 「環境変数」
+3. 「変数を追加」で上記の変数を設定
+4. 「本番環境」にのみ設定することを推奨
+
+**ビルドコマンドの設定：**
+環境変数を設定した場合、ビルドコマンドを以下に変更してください：
+
+| 項目 | 設定値 |
+|------|--------|
+| ビルドコマンド | `node scripts/inject-analytics.js` |
+| ビルド出力ディレクトリ | `/` |
+
+> **注意**: 環境変数が設定されていない場合、アナリティクス機能は無効になります（プレースホルダーは削除されます）。
 
 ### 注意事項
 
