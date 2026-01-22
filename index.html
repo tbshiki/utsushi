@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'none';">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'none';">
     <meta name="description" content="utsushi - 完全ローカル処理のテキスト差分比較ツール。サーバーに送信せず、ブラウザ内で安全に比較。">
     <meta property="og:title" content="utsushi - テキスト差分比較ツール">
     <meta property="og:description" content="複数テキストをブラウザ内で比較。完全ローカル処理でプライバシー保護。">
@@ -11,77 +13,91 @@
     <title>utsushi - テキスト差分比較ツール</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <header class="header">
         <div class="header-content">
             <h1 class="logo">
-                <span class="logo-icon">写</span>
+                <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    style="background: var(--accent-primary); padding: 4px; color: white;">
+                    <path d="M16 2H8a2 2 0 0 0-2 2v1h9a2 2 0 0 1 2 2v13h1a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"
+                        style="opacity: 0.6"></path>
+                    <path d="M14 6H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z"></path>
+                    <path d="M7 10h6"></path>
+                    <path d="M7 14h6"></path>
+                    <path d="M7 18h4"></path>
+                </svg>
                 utsushi
             </h1>
             <p class="tagline">テキスト差分比較ツール</p>
         </div>
-        <div class="security-badge">
-            <span class="badge-icon">🔒</span>
-            <span class="badge-text">完全ローカル処理</span>
-        </div>
+        <button id="btn-theme-toggle" class="btn-theme-toggle" title="モード切り替え">
+            <span class="theme-icon">☀️</span>
+        </button>
     </header>
 
     <main class="main-container">
         <!-- Input Section -->
         <section class="input-section">
-            <div class="input-panels">
-                <!-- Text A (Base) -->
-                <div class="input-panel" data-panel="a">
-                    <div class="panel-header">
-                        <label class="panel-label">
-                            <span class="label-badge base">基準</span>
-                            Text A
-                        </label>
-                        <button class="btn-clear" data-target="a" title="クリア">
-                            <span>×</span>
-                        </button>
-                    </div>
-                    <textarea id="text-a" class="text-input" placeholder="基準となるテキストを入力..."></textarea>
-                    <div class="panel-footer">
-                        <span class="char-count" data-count="a">0 文字</span>
-                    </div>
-                </div>
-
-                <!-- Text B -->
-                <div class="input-panel" data-panel="b">
+            <div id="input-panels" class="input-panels">
+                <!-- イ (Base) -->
+                <div class="input-panel" data-panel="i">
                     <div class="panel-header">
                         <label class="panel-label">
                             <span class="label-badge compare">比較</span>
-                            Text B
+                            イ
                         </label>
-                        <button class="btn-clear" data-target="b" title="クリア">
+                        <button class="btn-clear" data-target="i" title="クリア">
                             <span>×</span>
                         </button>
                     </div>
-                    <textarea id="text-b" class="text-input" placeholder="比較するテキストを入力..."></textarea>
+                    <textarea id="text-i" class="text-input" placeholder="テキストを入力..."></textarea>
                     <div class="panel-footer">
-                        <span class="char-count" data-count="b">0 文字</span>
+                        <div class="char-count" data-count="i">
+                            <span class="count-item"><span class="count-value">0</span> 文字</span>
+                            <span class="count-separator">·</span>
+                            <span class="count-item"><span class="count-value">0</span> 単語</span>
+                            <span class="count-separator">·</span>
+                            <span class="count-item"><span class="count-value">1</span> 行</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Text C -->
-                <div class="input-panel" data-panel="c">
+                <!-- ロ -->
+                <div class="input-panel" data-panel="ro">
                     <div class="panel-header">
                         <label class="panel-label">
                             <span class="label-badge compare">比較</span>
-                            Text C
+                            ロ
                         </label>
-                        <button class="btn-clear" data-target="c" title="クリア">
+                        <button class="btn-clear" data-target="ro" title="クリア">
                             <span>×</span>
                         </button>
                     </div>
-                    <textarea id="text-c" class="text-input" placeholder="比較するテキストを入力（任意）..."></textarea>
+                    <textarea id="text-ro" class="text-input" placeholder="比較するテキストを入力..."></textarea>
                     <div class="panel-footer">
-                        <span class="char-count" data-count="c">0 文字</span>
+                        <div class="char-count" data-count="ro">
+                            <span class="count-item"><span class="count-value">0</span> 文字</span>
+                            <span class="count-separator">·</span>
+                            <span class="count-item"><span class="count-value">0</span> 単語</span>
+                            <span class="count-separator">·</span>
+                            <span class="count-item"><span class="count-value">1</span> 行</span>
+                        </div>
                     </div>
+                </div>
+
+                <!-- Add Panel Button -->
+                <div id="add-panel-container" class="add-panel-container">
+                    <button id="btn-add-panel" class="btn-add-panel" title="テキストパネルを追加">
+                        <span class="add-icon">+</span>
+                        <span class="add-text">パネル追加</span>
+                    </button>
                 </div>
             </div>
 
@@ -113,62 +129,34 @@
                 </div>
             </div>
 
-            <div class="diff-container">
-                <!-- A vs B -->
-                <div class="diff-pair" id="diff-ab">
-                    <div class="diff-pair-header">
-                        <span class="diff-pair-title">Text A vs Text B</span>
-                        <div class="diff-stats" id="stats-ab"></div>
-                    </div>
-                    <div class="diff-panels">
-                        <div class="diff-panel" data-side="left">
-                            <div class="diff-panel-header">Text A（基準）</div>
-                            <div class="diff-content" id="diff-ab-left"></div>
-                        </div>
-                        <div class="diff-panel" data-side="right">
-                            <div class="diff-panel-header">Text B</div>
-                            <div class="diff-content" id="diff-ab-right"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- A vs C -->
-                <div class="diff-pair hidden" id="diff-ac">
-                    <div class="diff-pair-header">
-                        <span class="diff-pair-title">Text A vs Text C</span>
-                        <div class="diff-stats" id="stats-ac"></div>
-                    </div>
-                    <div class="diff-panels">
-                        <div class="diff-panel" data-side="left">
-                            <div class="diff-panel-header">Text A（基準）</div>
-                            <div class="diff-content" id="diff-ac-left"></div>
-                        </div>
-                        <div class="diff-panel" data-side="right">
-                            <div class="diff-panel-header">Text C</div>
-                            <div class="diff-content" id="diff-ac-right"></div>
-                        </div>
-                    </div>
-                </div>
+            <div id="diff-container" class="diff-container">
+                <!-- Diff results will be dynamically generated -->
             </div>
         </section>
     </main>
 
     <footer class="footer">
         <div class="footer-content">
-            <div class="privacy-notice">
-                <h3>🔐 プライバシーについて</h3>
-                <ul>
-                    <li>本ツールはすべてローカル処理です</li>
-                    <li>入力内容はサーバーに送信されません</li>
-                    <li>入力データの責任は利用者にあります</li>
-                </ul>
+            <div class="footer-main">
+                <div class="footer-info">
+                    <span>utsushi v0.1.0</span>
+                </div>
+                <button id="btn-privacy-toggle" class="btn-privacy-toggle active">
+                    🔒 プライバシー
+                    <span class="toggle-icon">▼</span>
+                </button>
             </div>
-            <div class="footer-info">
-                <p>utsushi v0.1.0</p>
-                <p>MIT License</p>
+            <div id="privacy-details" class="privacy-details">
+                <ul>
+                    <li>✅ 本ツールはすべてローカル処理です</li>
+                    <li>✅ 入力内容はサーバーに送信されません</li>
+                    <li>⚠️ 入力データの責任は利用者にあります</li>
+                </ul>
             </div>
         </div>
     </footer>
+
+    <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/diff@5.1.0/dist/diff.min.js"></script>
@@ -176,4 +164,5 @@
     <script src="ui.js"></script>
     <script src="main.js"></script>
 </body>
+
 </html>

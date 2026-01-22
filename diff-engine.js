@@ -3,19 +3,16 @@
  * jsdiff ライブラリのラッパー
  */
 
-const DiffEngine = (function() {
+const DiffEngine = (function () {
     'use strict';
 
     /**
-     * 2つのテキストを行単位で比較
+     * 2つのテキストを行単位で比較（単語レベル差分対応）
      * @param {string} textA - 基準テキスト
      * @param {string} textB - 比較テキスト
      * @returns {Object} 差分結果
      */
     function compareLines(textA, textB) {
-        const linesA = textA.split('\n');
-        const linesB = textB.split('\n');
-
         // jsdiff を使用して行単位の差分を取得
         const diff = Diff.diffLines(textA, textB);
 
@@ -33,66 +30,171 @@ const DiffEngine = (function() {
         let leftLineNum = 0;
         let rightLineNum = 0;
 
+        // 差分を処理しやすい形に変換
+        const parts = [];
         diff.forEach(part => {
             const lines = part.value.split('\n');
-            // 最後の空行を除去（split による余分な要素）
             if (lines[lines.length - 1] === '') {
                 lines.pop();
             }
-
-            if (part.added) {
-                // 追加された行
-                lines.forEach(line => {
-                    rightLineNum++;
-                    result.right.push({
-                        lineNum: rightLineNum,
-                        content: line,
-                        type: 'added'
-                    });
-                    // 左側には空行を追加（同期表示用）
-                    result.left.push({
-                        lineNum: null,
-                        content: '',
-                        type: 'empty'
-                    });
-                    result.stats.added++;
+            lines.forEach(line => {
+                parts.push({
+                    content: line,
+                    added: part.added || false,
+                    removed: part.removed || false
                 });
-            } else if (part.removed) {
-                // 削除された行
-                lines.forEach(line => {
-                    leftLineNum++;
-                    result.left.push({
-                        lineNum: leftLineNum,
-                        content: line,
-                        type: 'removed'
-                    });
-                    // 右側には空行を追加（同期表示用）
-                    result.right.push({
-                        lineNum: null,
-                        content: '',
-                        type: 'empty'
-                    });
-                    result.stats.removed++;
-                });
-            } else {
-                // 変更なし
-                lines.forEach(line => {
-                    leftLineNum++;
-                    rightLineNum++;
-                    result.left.push({
-                        lineNum: leftLineNum,
-                        content: line,
-                        type: 'unchanged'
-                    });
-                    result.right.push({
-                        lineNum: rightLineNum,
-                        content: line,
-                        type: 'unchanged'
-                    });
-                    result.stats.unchanged++;
-                });
-            }
+            });
         });
+
+        let i = 0;
+        while (i < parts.length) {
+            const part = parts[i];
+
+            if (!part.added && !part.removed) {
+                // 変更なし
+                leftLineNum++;
+                rightLineNum++;
+                result.left.push({
+                    lineNum: leftLineNum,
+                    content: part.content,
+                    type: 'unchanged',
+                    wordDiff: null
+                });
+                result.right.push({
+                    lineNum: rightLineNum,
+                    content: part.content,
+                    type: 'unchanged',
+                    wordDiff: null
+                });
+                result.stats.unchanged++;
+                i++;
+            } else if (part.removed) {
+                // 削除された行 - 次に追加行があるかチェック
+                const removedLines = [];
+                while (i < parts.length && parts[i].removed) {
+                    removedLines.push(parts[i].content);
+                    i++;
+                }
+
+                const addedLines = [];
+                while (i < parts.length && parts[i].added) {
+                    addedLines.push(parts[i].content);
+                    i++;
+                }
+
+                // ペアリングして変更行を生成
+                const maxLen = Math.max(removedLines.length, addedLines.length);
+                for (let j = 0; j < maxLen; j++) {
+                    const removedLine = removedLines[j];
+                    const addedLine = addedLines[j];
+
+                    if (removedLine !== undefined && addedLine !== undefined) {
+                        // 両方存在 - 類似度をチェック
+                        const similarity = calculateSimilarity(removedLine, addedLine);
+
+                        if (similarity > 0.3) {
+                            // 類似している場合は変更行として単語レベル差分を計算
+                            const wordDiff = compareWords(removedLine, addedLine);
+                            leftLineNum++;
+                            rightLineNum++;
+                            result.left.push({
+                                lineNum: leftLineNum,
+                                content: removedLine,
+                                type: 'changed',
+                                wordDiff: wordDiff.left
+                            });
+                            result.right.push({
+                                lineNum: rightLineNum,
+                                content: addedLine,
+                                type: 'changed',
+                                wordDiff: wordDiff.right
+                            });
+                            result.stats.changed++;
+                        } else {
+                            // 類似度が低い場合は別々に処理
+                            leftLineNum++;
+                            result.left.push({
+                                lineNum: leftLineNum,
+                                content: removedLine,
+                                type: 'removed',
+                                wordDiff: null
+                            });
+                            result.right.push({
+                                lineNum: null,
+                                content: '',
+                                type: 'empty',
+                                wordDiff: null
+                            });
+                            result.stats.removed++;
+
+                            rightLineNum++;
+                            result.left.push({
+                                lineNum: null,
+                                content: '',
+                                type: 'empty',
+                                wordDiff: null
+                            });
+                            result.right.push({
+                                lineNum: rightLineNum,
+                                content: addedLine,
+                                type: 'added',
+                                wordDiff: null
+                            });
+                            result.stats.added++;
+                        }
+                    } else if (removedLine !== undefined) {
+                        // 削除のみ
+                        leftLineNum++;
+                        result.left.push({
+                            lineNum: leftLineNum,
+                            content: removedLine,
+                            type: 'removed',
+                            wordDiff: null
+                        });
+                        result.right.push({
+                            lineNum: null,
+                            content: '',
+                            type: 'empty',
+                            wordDiff: null
+                        });
+                        result.stats.removed++;
+                    } else if (addedLine !== undefined) {
+                        // 追加のみ
+                        rightLineNum++;
+                        result.left.push({
+                            lineNum: null,
+                            content: '',
+                            type: 'empty',
+                            wordDiff: null
+                        });
+                        result.right.push({
+                            lineNum: rightLineNum,
+                            content: addedLine,
+                            type: 'added',
+                            wordDiff: null
+                        });
+                        result.stats.added++;
+                    }
+                }
+            } else if (part.added) {
+                // 追加行のみ（削除行が先に来なかった場合）
+                rightLineNum++;
+                result.left.push({
+                    lineNum: null,
+                    content: '',
+                    type: 'empty',
+                    wordDiff: null
+                });
+                result.right.push({
+                    lineNum: rightLineNum,
+                    content: part.content,
+                    type: 'added',
+                    wordDiff: null
+                });
+                result.stats.added++;
+                i++;
+            }
+        }
 
         return result;
     }
@@ -135,23 +237,7 @@ const DiffEngine = (function() {
         return { left: leftParts, right: rightParts };
     }
 
-    /**
-     * 複数テキストを基準テキストと比較
-     * @param {string} baseText - 基準テキスト (A)
-     * @param {string[]} compareTexts - 比較テキストの配列 [B, C, ...]
-     * @returns {Object[]} 各比較の差分結果
-     */
-    function compareMultiple(baseText, compareTexts) {
-        return compareTexts.map((text, index) => {
-            if (!text || text.trim() === '') {
-                return null;
-            }
-            return {
-                label: String.fromCharCode(66 + index), // B, C, D...
-                diff: compareLines(baseText, text)
-            };
-        }).filter(result => result !== null);
-    }
+
 
     /**
      * 行の変更タイプを判定（より詳細な分析）
@@ -190,6 +276,14 @@ const DiffEngine = (function() {
 
         if (maxLen === 0) return 1;
 
+        // パフォーマンスガード: 文字列が長すぎる場合は簡易判定または類似計算をスキップ
+        // diffCharsはO(N^2)になりうるため、2000文字以上の場合は計算コストが高い
+        if (maxLen > 2000) {
+            // 簡易的に長さの比率だけで返す（詳細比較はコスト高のため）
+            const minLen = Math.min(len1, len2);
+            return minLen / maxLen;
+        }
+
         // 単純な文字一致率
         const diff = Diff.diffChars(str1, str2);
         let matchCount = 0;
@@ -201,6 +295,30 @@ const DiffEngine = (function() {
         });
 
         return matchCount / maxLen;
+    }
+
+    /**
+     * 複数のテキストを総当たりで比較
+     * @param {Object} textsMap - IDをキーとしたテキストのマップ { i: "...", ro: "..." }
+     * @returns {Array} 比較結果の配列
+     */
+    function compareMultiple(textsMap) {
+        const ids = Object.keys(textsMap);
+        const results = [];
+
+        for (let i = 0; i < ids.length; i++) {
+            for (let j = i + 1; j < ids.length; j++) {
+                const id1 = ids[i];
+                const id2 = ids[j];
+                const result = compareLines(textsMap[id1], textsMap[id2]);
+                results.push({
+                    id1,
+                    id2,
+                    result
+                });
+            }
+        }
+        return results;
     }
 
     // Public API

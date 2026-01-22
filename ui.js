@@ -1,10 +1,21 @@
 /**
  * utsushi - UI Controller
- * 差分表示とUI制御
+ * 差分表示とUI制御（イロハニ対応・動的パネル）
  */
 
 const UI = (function () {
   'use strict';
+
+  // パネル設定
+  const PANELS = [
+    { id: 'i', name: 'イ', isBase: true },
+    { id: 'ro', name: 'ロ', isBase: false },
+    { id: 'ha', name: 'ハ', isBase: false },
+    { id: 'ni', name: 'ニ', isBase: false }
+  ];
+
+  // 現在表示中のパネル数
+  const MAX_PANELS = 4;
 
   // DOM キャッシュ
   let elements = {};
@@ -14,8 +25,9 @@ const UI = (function () {
    */
   function init() {
     cacheElements();
+    setupTheme();
     setupEventListeners();
-    setupSyncScroll();
+    updatePanelLayout();
   }
 
   /**
@@ -23,26 +35,17 @@ const UI = (function () {
    */
   function cacheElements() {
     elements = {
-      textA: document.getElementById('text-a'),
-      textB: document.getElementById('text-b'),
-      textC: document.getElementById('text-c'),
+      inputPanels: document.getElementById('input-panels'),
+      addPanelContainer: document.getElementById('add-panel-container'),
+      btnAddPanel: document.getElementById('btn-add-panel'),
       btnCompare: document.getElementById('btn-compare'),
       btnClearAll: document.getElementById('btn-clear-all'),
       resultsSection: document.getElementById('results-section'),
-      diffAB: document.getElementById('diff-ab'),
-      diffAC: document.getElementById('diff-ac'),
-      diffABLeft: document.getElementById('diff-ab-left'),
-      diffABRight: document.getElementById('diff-ab-right'),
-      diffACLeft: document.getElementById('diff-ac-left'),
-      diffACRight: document.getElementById('diff-ac-right'),
-      statsAB: document.getElementById('stats-ab'),
-      statsAC: document.getElementById('stats-ac'),
-      charCounts: {
-        a: document.querySelector('[data-count="a"]'),
-        b: document.querySelector('[data-count="b"]'),
-        c: document.querySelector('[data-count="c"]')
-      },
-      clearButtons: document.querySelectorAll('.btn-clear')
+      diffContainer: document.getElementById('diff-container'),
+      btnPrivacyToggle: document.getElementById('btn-privacy-toggle'),
+      privacyDetails: document.getElementById('privacy-details'),
+      btnThemeToggle: document.getElementById('btn-theme-toggle'),
+      toastContainer: document.getElementById('toast-container')
     };
   }
 
@@ -56,24 +59,48 @@ const UI = (function () {
     // 全クリアボタン
     elements.btnClearAll.addEventListener('click', handleClearAll);
 
-    // 個別クリアボタン
-    elements.clearButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const target = e.currentTarget.dataset.target;
+    // パネル追加ボタン
+    elements.btnAddPanel.addEventListener('click', handleAddPanel);
+
+    // プライバシー折りたたみボタン
+    if (elements.btnPrivacyToggle) {
+      elements.btnPrivacyToggle.addEventListener('click', handlePrivacyToggle);
+    }
+
+    // テーマ切り替えボタン
+    if (elements.btnThemeToggle) {
+      elements.btnThemeToggle.addEventListener('click', handleThemeToggle);
+    }
+
+    // イベントデリゲーション: 入力パネル内のイベントを集約
+    elements.inputPanels.addEventListener('click', (e) => {
+      // クリアボタン
+      const clearBtn = e.target.closest('.btn-clear');
+      if (clearBtn) {
+        const target = clearBtn.dataset.target;
         handleClear(target);
-      });
+        return;
+      }
+
+      // 削除ボタン
+      const removeBtn = e.target.closest('.btn-remove-panel');
+      if (removeBtn) {
+        const panelId = removeBtn.dataset.panel;
+        handleRemovePanel(panelId);
+        return;
+      }
     });
 
-    // 文字カウント
-    ['textA', 'textB', 'textC'].forEach(key => {
-      elements[key].addEventListener('input', (e) => {
-        updateCharCount(key.replace('text', '').toLowerCase(), e.target.value);
-      });
+    // 文字カウント (inputイベント)
+    elements.inputPanels.addEventListener('input', (e) => {
+      if (e.target.classList.contains('text-input')) {
+        const panelId = e.target.id.replace('text-', '');
+        updateCharCount(panelId, e.target.value);
+      }
     });
 
     // キーボードショートカット
     document.addEventListener('keydown', (e) => {
-      // Ctrl + Enter で比較
       if (e.ctrlKey && e.key === 'Enter') {
         e.preventDefault();
         handleCompare();
@@ -82,113 +109,250 @@ const UI = (function () {
   }
 
   /**
-   * 同期スクロール設定
+   * テーマ設定（初期化）
    */
-  function setupSyncScroll() {
-    const pairs = [
-      ['diff-ab-left', 'diff-ab-right'],
-      ['diff-ac-left', 'diff-ac-right']
-    ];
+  function setupTheme() {
+    // ローカルストレージまたはシステム設定を確認
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    pairs.forEach(([leftId, rightId]) => {
-      const left = document.getElementById(leftId);
-      const right = document.getElementById(rightId);
+    // デフォルトはシステム設定に従う (nullの場合はシステム設定)
+    const theme = savedTheme ? savedTheme : (prefersDark ? 'dark' : 'light');
 
-      if (left && right) {
-        let isScrolling = false;
+    document.documentElement.setAttribute('data-theme', theme);
+    updateThemeIcon(theme);
+  }
 
-        left.addEventListener('scroll', () => {
-          if (!isScrolling) {
-            isScrolling = true;
-            right.scrollTop = left.scrollTop;
-            requestAnimationFrame(() => { isScrolling = false; });
-          }
-        });
+  /**
+   * テーマ切り替え
+   */
+  function handleThemeToggle() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-        right.addEventListener('scroll', () => {
-          if (!isScrolling) {
-            isScrolling = true;
-            left.scrollTop = right.scrollTop;
-            requestAnimationFrame(() => { isScrolling = false; });
-          }
-        });
-      }
-    });
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+  }
+
+  /**
+   * テーマアイコン更新
+   */
+  function updateThemeIcon(theme) {
+    if (!elements.btnThemeToggle) return;
+
+    // アイコンのテキストまたはクラスを変更
+    const text = theme === 'dark' ? '☀️' : '🌙';
+    elements.btnThemeToggle.querySelector('.theme-icon').textContent = text;
+    elements.btnThemeToggle.title = theme === 'dark' ? 'ライトモードに切り替え' : 'ダークモードに切り替え';
+  }
+
+  /**
+   * パネル追加
+   */
+  function handleAddPanel() {
+    const nextPanel = PANELS.find(p => !document.querySelector(`[data-panel="${p.id}"]`));
+
+    if (!nextPanel) return;
+
+    const panelHtml = createPanelHtml(nextPanel);
+
+    // 追加ボタンの前にパネルを挿入
+    elements.addPanelContainer.insertAdjacentHTML('beforebegin', panelHtml);
+
+    updatePanelLayout();
+    updateAddButton();
+  }
+
+  /**
+   * パネル削除
+   */
+  function handleRemovePanel(panelId) {
+    const panel = document.querySelector(`[data-panel="${panelId}"]`);
+    if (panel) {
+      panel.remove();
+      updatePanelLayout();
+      updateAddButton();
+    }
+  }
+
+  /**
+   * パネルHTML生成
+   */
+  function createPanelHtml(panel) {
+    return `
+      <div class="input-panel" data-panel="${panel.id}">
+        <div class="panel-header">
+          <label class="panel-label">
+            <span class="label-badge compare">比較</span>
+            ${panel.name}
+          </label>
+          <div class="panel-actions">
+            <button class="btn-clear" data-target="${panel.id}" title="クリア">
+              <span>×</span>
+            </button>
+            <button class="btn-remove-panel" data-panel="${panel.id}" title="パネル削除">
+              <span>🗑</span>
+            </button>
+          </div>
+        </div>
+        <textarea id="text-${panel.id}" class="text-input" placeholder="比較するテキストを入力..."></textarea>
+        <div class="panel-footer">
+          <div class="char-count" data-count="${panel.id}">
+            <span class="count-item"><span class="count-value">0</span> 文字</span>
+            <span class="count-separator">·</span>
+            <span class="count-item"><span class="count-value">0</span> 単語</span>
+            <span class="count-separator">·</span>
+            <span class="count-item"><span class="count-value">1</span> 行</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * パネルレイアウト更新
+   */
+  function updatePanelLayout() {
+    const currentPanels = document.querySelectorAll('.input-panel').length;
+    elements.inputPanels.style.gridTemplateColumns = `repeat(${Math.min(currentPanels, 3)}, 1fr)`;
+  }
+
+  /**
+   * 追加ボタン更新
+   */
+  function updateAddButton() {
+    const currentPanels = document.querySelectorAll('.input-panel').length;
+    if (currentPanels >= MAX_PANELS) {
+      elements.addPanelContainer.style.display = 'none';
+    } else {
+      elements.addPanelContainer.style.display = 'flex';
+    }
   }
 
   /**
    * 比較実行
    */
   function handleCompare() {
-    const textA = elements.textA.value;
-    const textB = elements.textB.value;
-    const textC = elements.textC.value;
+    // アクティブなパネルのテキストを取得
+    const texts = {};
+    PANELS.forEach(panel => {
+      const textarea = document.getElementById(`text-${panel.id}`);
+      if (textarea) {
+        texts[panel.id] = textarea.value;
+      }
+    });
 
-    // 最低限 A と B が必要
-    if (!textA.trim()) {
-      showError('基準テキスト（Text A）を入力してください');
-      elements.textA.focus();
+    // 有効なテキストを持つパネルを抽出
+    const activePanels = Object.keys(texts).filter(id => texts[id] && texts[id].trim());
+
+    if (activePanels.length < 2) {
+      showToast('比較するには少なくとも2つのテキストを入力してください', 'error');
       return;
     }
 
-    if (!textB.trim() && !textC.trim()) {
-      showError('比較するテキスト（Text B または C）を入力してください');
-      elements.textB.focus();
-      return;
-    }
-
-    // 結果表示エリアを表示
+    // 結果表示エリアをクリアして表示
+    elements.diffContainer.innerHTML = '';
     elements.resultsSection.classList.remove('hidden');
 
-    // A vs B の比較
-    if (textB.trim()) {
-      const resultAB = DiffEngine.compareLines(textA, textB);
-      renderDiff('ab', resultAB);
-      elements.diffAB.classList.remove('hidden');
-    } else {
-      elements.diffAB.classList.add('hidden');
-    }
+    // 全ペアの比較を生成
+    const pairs = generatePairs(activePanels);
 
-    // A vs C の比較
-    if (textC.trim()) {
-      const resultAC = DiffEngine.compareLines(textA, textC);
-      renderDiff('ac', resultAC);
-      elements.diffAC.classList.remove('hidden');
-    } else {
-      elements.diffAC.classList.add('hidden');
-    }
+    pairs.forEach(([id1, id2]) => {
+      const result = DiffEngine.compareLines(texts[id1], texts[id2]);
+      const pairHtml = createDiffPairHtml(id1, id2, result);
+      elements.diffContainer.insertAdjacentHTML('beforeend', pairHtml);
+    });
+
+    // 同期スクロール設定
+    setupSyncScroll();
 
     // 結果エリアにスクロール
     elements.resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   /**
-   * 差分をレンダリング
-   * @param {string} pairId - 'ab' または 'ac'
-   * @param {Object} result - 差分結果
+   * パネルIDからラベル名を取得
    */
-  function renderDiff(pairId, result) {
-    const leftContainer = document.getElementById(`diff-${pairId}-left`);
-    const rightContainer = document.getElementById(`diff-${pairId}-right`);
-    const statsContainer = document.getElementById(`stats-${pairId}`);
+  function getPanelName(id) {
+    const panel = PANELS.find(p => p.id === id);
+    return panel ? panel.name : id;
+  }
 
-    // 統計情報を表示
-    statsContainer.innerHTML = `
+  /**
+   * ペア生成（全組み合わせ）
+   */
+  function generatePairs(ids) {
+    const pairs = [];
+    for (let i = 0; i < ids.length; i++) {
+      for (let j = i + 1; j < ids.length; j++) {
+        pairs.push([ids[i], ids[j]]);
+      }
+    }
+    return pairs;
+  }
+
+  /**
+   * 差分ペアHTML生成
+   */
+  function createDiffPairHtml(id1, id2, result) {
+    const name1 = getPanelName(id1);
+    const name2 = getPanelName(id2);
+    const pairId = `${id1}-${id2}`;
+
+    return `
+      <div class="diff-pair" id="diff-${pairId}">
+        <div class="diff-pair-header">
+          <span class="diff-pair-title">${name1} vs ${name2}</span>
+          <div class="diff-stats">
             <span class="stat added">+${result.stats.added}</span>
             <span class="stat removed">-${result.stats.removed}</span>
-        `;
+            ${result.stats.changed > 0 ? `<span class="stat changed">~${result.stats.changed}</span>` : ''}
+          </div>
+        </div>
+        <div class="diff-panels">
+          <div class="diff-panel" data-side="left">
+            <div class="diff-panel-header">${name1}</div>
+            <div class="diff-content" id="diff-${pairId}-left">${renderLines(result.left)}</div>
+          </div>
+          <div class="diff-panel" data-side="right">
+            <div class="diff-panel-header">${name2}</div>
+            <div class="diff-content" id="diff-${pairId}-right">${renderLines(result.right)}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
-    // 左側（基準テキスト）をレンダリング
-    leftContainer.innerHTML = renderLines(result.left);
+  /**
+   * 同期スクロール設定
+   * マウスオーバーしている側をマスターとして同期
+   */
+  function setupSyncScroll() {
+    const diffPairs = document.querySelectorAll('.diff-pair');
+    diffPairs.forEach(pair => {
+      const left = pair.querySelector('.diff-content[id$="-left"]');
+      const right = pair.querySelector('.diff-content[id$="-right"]');
 
-    // 右側（比較テキスト）をレンダリング
-    rightContainer.innerHTML = renderLines(result.right);
+      if (left && right) {
+        // 同期処理を共通化
+        const sync = (source, target) => {
+          // マウスが乗っている側のみをマスターとする（ループ防止）
+          if (source.matches(':hover')) {
+            target.scrollTop = source.scrollTop;
+            target.scrollLeft = source.scrollLeft;
+          }
+        };
+
+        // スクロールイベント
+        left.addEventListener('scroll', () => requestAnimationFrame(() => sync(left, right)));
+        right.addEventListener('scroll', () => requestAnimationFrame(() => sync(right, left)));
+      }
+    });
   }
 
   /**
    * 行をHTML化
-   * @param {Array} lines - 行情報の配列
-   * @returns {string} HTML文字列
    */
   function renderLines(lines) {
     if (lines.length === 0) {
@@ -198,21 +362,41 @@ const UI = (function () {
     return lines.map(line => {
       const typeClass = getLineClass(line.type);
       const lineNumDisplay = line.lineNum !== null ? line.lineNum : '';
-      const content = escapeHtml(line.content);
+
+      let content;
+      if (line.wordDiff && line.wordDiff.length > 0) {
+        content = renderWordDiff(line.wordDiff);
+      } else {
+        content = escapeHtml(line.content);
+      }
 
       return `
-                <div class="diff-line ${typeClass}">
-                    <span class="line-number">${lineNumDisplay}</span>
-                    <span class="line-content">${content || '&nbsp;'}</span>
-                </div>
-            `;
+        <div class="diff-line ${typeClass}">
+          <span class="line-number">${lineNumDisplay}</span>
+          <span class="line-content">${content || '&nbsp;'}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  /**
+   * 単語レベル差分をHTML化
+   */
+  function renderWordDiff(wordDiff) {
+    return wordDiff.map(part => {
+      const text = escapeHtml(part.text);
+      if (part.type === 'added') {
+        return `<span class="word-added">${text}</span>`;
+      } else if (part.type === 'removed') {
+        return `<span class="word-removed">${text}</span>`;
+      } else {
+        return text;
+      }
     }).join('');
   }
 
   /**
    * 行タイプからCSSクラスを取得
-   * @param {string} type
-   * @returns {string}
    */
   function getLineClass(type) {
     switch (type) {
@@ -226,35 +410,82 @@ const UI = (function () {
 
   /**
    * HTMLエスケープ
-   * @param {string} text
-   * @returns {string}
    */
   function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    if (!text) return '';
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   /**
    * 文字カウント更新
-   * @param {string} target - 'a', 'b', 'c'
-   * @param {string} value
    */
-  function updateCharCount(target, value) {
-    const count = value.length;
-    const lines = value.split('\n').length;
-    elements.charCounts[target].textContent = `${count} 文字 / ${lines} 行`;
+  function updateCharCount(panelId, value) {
+    const countEl = document.querySelector(`[data-count="${panelId}"]`);
+    if (countEl) {
+      const stats = calculateTextStats(value);
+      countEl.innerHTML = `
+        <span class="count-item"><span class="count-value">${stats.chars}</span> 文字</span>
+        <span class="count-separator">·</span>
+        <span class="count-item"><span class="count-value">${stats.words}</span> 単語</span>
+        <span class="count-separator">·</span>
+        <span class="count-item"><span class="count-value">${stats.lines}</span> 行</span>
+      `;
+    }
+  }
+
+  /**
+   * テキスト統計を計算
+   * @param {string} text - テキスト
+   * @returns {Object} 統計情報
+   */
+  function calculateTextStats(text) {
+    // 文字数（改行除く）
+    const chars = text.replace(/\n/g, '').length;
+
+    // 行数
+    const lines = text ? text.split('\n').length : 1;
+
+    // 単語数（日本語・英語両対応）
+    // 英単語: スペース区切り
+    // 日本語: 文字単位でカウント（簡易的）
+    const words = countWords(text);
+
+    return { chars, lines, words };
+  }
+
+  /**
+   * 単語数をカウント（日本語・英語対応）
+   * @param {string} text - テキスト
+   * @returns {number} 単語数
+   */
+  function countWords(text) {
+    if (!text || !text.trim()) return 0;
+
+    // 英語の単語（スペース区切り）
+    const englishWords = text.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?/g) || [];
+
+    // 日本語の文字（ひらがな・カタカナ・漢字）
+    const japaneseChars = text.match(/[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g) || [];
+
+    // 数字の連続
+    const numbers = text.match(/\d+/g) || [];
+
+    return englishWords.length + japaneseChars.length + numbers.length;
   }
 
   /**
    * 個別クリア
-   * @param {string} target - 'a', 'b', 'c'
    */
-  function handleClear(target) {
-    const key = `text${target.toUpperCase()}`;
-    if (elements[key]) {
-      elements[key].value = '';
-      updateCharCount(target, '');
+  function handleClear(panelId) {
+    const textarea = document.getElementById(`text-${panelId}`);
+    if (textarea) {
+      textarea.value = '';
+      updateCharCount(panelId, '');
     }
   }
 
@@ -262,27 +493,58 @@ const UI = (function () {
    * 全クリア
    */
   function handleClearAll() {
-    ['a', 'b', 'c'].forEach(target => {
-      handleClear(target);
+    PANELS.forEach(panel => {
+      handleClear(panel.id);
     });
     elements.resultsSection.classList.add('hidden');
   }
 
   /**
-   * エラー表示（簡易版）
-   * @param {string} message
+   * プライバシー折りたたみ切り替え
    */
-  function showError(message) {
-    // シンプルなアラート（将来的にはトースト通知に）
-    alert(message);
+  function handlePrivacyToggle() {
+    const isHidden = elements.privacyDetails.classList.contains('hidden');
+
+    if (isHidden) {
+      elements.privacyDetails.classList.remove('hidden');
+      elements.btnPrivacyToggle.classList.add('active');
+    } else {
+      elements.privacyDetails.classList.add('hidden');
+      elements.btnPrivacyToggle.classList.remove('active');
+    }
   }
 
   /**
-   * 成功表示（簡易版）
-   * @param {string} message
+   * トースト通知の表示
    */
-  function showSuccess(message) {
-    console.log('✓', message);
+  function showToast(message, type = 'info') {
+    if (!elements.toastContainer) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    elements.toastContainer.appendChild(toast);
+
+    // アニメーション用
+    requestAnimationFrame(() => {
+      toast.classList.add('show');
+    });
+
+    // 3秒後に消去
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.addEventListener('transitionend', () => {
+        toast.remove();
+      });
+    }, 3000);
+  }
+
+  /**
+   * エラー表示 (後方互換性のため残すがToastを使用)
+   */
+  function showError(message) {
+    showToast(message, 'error');
   }
 
   // Public API
@@ -290,8 +552,8 @@ const UI = (function () {
     init,
     handleCompare,
     handleClearAll,
-    showError,
-    showSuccess
+    handleAddPanel,
+    showError
   };
 })();
 
