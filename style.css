@@ -289,10 +289,20 @@ body {
 
 .text-input:focus {
     outline: none;
+    /* Focus styles handled by parent .input-panel which has focus-within */
 }
 
 .text-input::placeholder {
-    color: var(--text-muted);
+    color: var(--text-secondary);
+    /* Darker for accessibility */
+    opacity: 0.7;
+}
+
+/* Accessible focus rings */
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
 }
 
 .panel-footer {

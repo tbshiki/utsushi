@@ -195,11 +195,11 @@ const UI = (function () {
             ${panel.name}
           </label>
           <div class="panel-actions">
-            <button class="btn-clear" data-target="${panel.id}" title="クリア" tabindex="-1">
-              <span>×</span>
+            <button class="btn-clear" data-target="${panel.id}" title="クリア" tabindex="-1" aria-label="${panel.name}のテキストをクリア">
+              <span aria-hidden="true">×</span>
             </button>
-            <button class="btn-remove-panel" data-panel="${panel.id}" title="パネル削除" tabindex="-1">
-              <span>🗑</span>
+            <button class="btn-remove-panel" data-panel="${panel.id}" title="パネル削除" tabindex="-1" aria-label="${panel.name}のパネルを削除">
+              <span aria-hidden="true">🗑</span>
             </button>
           </div>
         </div>
@@ -527,9 +527,11 @@ const UI = (function () {
     if (isHidden) {
       elements.privacyDetails.classList.remove('hidden');
       elements.btnPrivacyToggle.classList.add('active');
+      elements.btnPrivacyToggle.setAttribute('aria-expanded', 'true');
     } else {
       elements.privacyDetails.classList.add('hidden');
       elements.btnPrivacyToggle.classList.remove('active');
+      elements.btnPrivacyToggle.setAttribute('aria-expanded', 'false');
     }
   }
 
@@ -542,6 +544,8 @@ const UI = (function () {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.textContent = message;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
 
     elements.toastContainer.appendChild(toast);
 

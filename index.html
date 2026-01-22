@@ -37,8 +37,8 @@
             </h1>
             <p class="tagline">テキスト差分比較ツール</p>
         </div>
-        <button id="btn-theme-toggle" class="btn-theme-toggle" title="モード切り替え">
-            <span class="theme-icon">☀️</span>
+        <button id="btn-theme-toggle" class="btn-theme-toggle" title="モード切り替え" aria-label="ダークモードとライトモードを切り替え">
+            <span class="theme-icon" aria-hidden="true">☀️</span>
         </button>
     </header>
 
@@ -54,8 +54,8 @@
                             <span class="label-badge compare">比較</span>
                             イ
                         </label>
-                        <button class="btn-clear" data-target="i" title="クリア" tabindex="-1">
-                            <span>×</span>
+                        <button class="btn-clear" data-target="i" title="クリア" tabindex="-1" aria-label="イのテキストをクリア">
+                            <span aria-hidden="true">×</span>
                         </button>
                     </div>
                     <div class="panel-footer">
@@ -77,8 +77,8 @@
                             <span class="label-badge compare">比較</span>
                             ロ
                         </label>
-                        <button class="btn-clear" data-target="ro" title="クリア" tabindex="-1">
-                            <span>×</span>
+                        <button class="btn-clear" data-target="ro" title="クリア" tabindex="-1" aria-label="ロのテキストをクリア">
+                            <span aria-hidden="true">×</span>
                         </button>
                     </div>
                     <div class="panel-footer">
@@ -139,11 +139,12 @@
         <div class="footer-content">
             <div class="footer-main">
                 <div class="footer-info">
-                    <span>utsushi v0.1.0</span>
+                    <span>utsushi v0.2.0</span>
                 </div>
-                <button id="btn-privacy-toggle" class="btn-privacy-toggle active">
+                <button id="btn-privacy-toggle" class="btn-privacy-toggle active" aria-expanded="true"
+                    aria-controls="privacy-details">
                     🔒 プライバシー
-                    <span class="toggle-icon">▼</span>
+                    <span class="toggle-icon" aria-hidden="true">▼</span>
                 </button>
             </div>
             <div id="privacy-details" class="privacy-details">
