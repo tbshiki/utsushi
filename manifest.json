@@ -1,0 +1,15 @@
+{
+  "name": "utsushi - テキスト差分比較ツール",
+  "short_name": "utsushi",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0969da",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}
