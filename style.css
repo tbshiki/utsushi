@@ -225,6 +225,7 @@ body {
     background: var(--bg-tertiary);
     border-bottom: 1px solid var(--border-primary);
     transition: background-color var(--transition-normal), border-color var(--transition-normal);
+    order: -1;
 }
 
 .panel-label {
@@ -354,31 +355,24 @@ body {
 }
 
 /* Add Panel Button - Compact */
+/* Add Panel Button - Compact */
 .add-panel-container {
+    /* Wrapper only for UI logic compatibility */
     display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 80px;
-    background: var(--bg-secondary);
-    border: 1px dashed var(--border-primary);
-    border-radius: var(--radius-md);
-    transition: all var(--transition-fast);
-    padding: var(--space-sm);
-}
-
-.add-panel-container:hover {
-    border-color: var(--accent-primary);
-    background: var(--accent-glow);
 }
 
 .btn-add-panel {
+    width: 100%;
+    min-height: 80px;
     display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: center;
     gap: var(--space-sm);
     padding: var(--space-sm) var(--space-md);
-    background: transparent;
-    border: none;
+    background: var(--bg-secondary);
+    border: 1px dashed var(--border-primary);
+    border-radius: var(--radius-md);
     color: var(--text-secondary);
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -386,6 +380,8 @@ body {
 }
 
 .btn-add-panel:hover {
+    border-color: var(--accent-primary);
+    background: var(--accent-glow);
     color: var(--accent-primary);
 }
 

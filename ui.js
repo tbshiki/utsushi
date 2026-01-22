@@ -162,6 +162,12 @@ const UI = (function () {
 
     updatePanelLayout();
     updateAddButton();
+
+    // 新しいパネルの入力エリアにフォーカス
+    const newTextarea = document.getElementById(`text-${nextPanel.id}`);
+    if (newTextarea) {
+      newTextarea.focus();
+    }
   }
 
   /**
@@ -182,21 +188,21 @@ const UI = (function () {
   function createPanelHtml(panel) {
     return `
       <div class="input-panel" data-panel="${panel.id}">
+        <textarea id="text-${panel.id}" class="text-input" placeholder="比較するテキストを入力..."></textarea>
         <div class="panel-header">
-          <label class="panel-label">
+          <label class="panel-label" for="text-${panel.id}">
             <span class="label-badge compare">比較</span>
             ${panel.name}
           </label>
           <div class="panel-actions">
-            <button class="btn-clear" data-target="${panel.id}" title="クリア">
+            <button class="btn-clear" data-target="${panel.id}" title="クリア" tabindex="-1">
               <span>×</span>
             </button>
-            <button class="btn-remove-panel" data-panel="${panel.id}" title="パネル削除">
+            <button class="btn-remove-panel" data-panel="${panel.id}" title="パネル削除" tabindex="-1">
               <span>🗑</span>
             </button>
           </div>
         </div>
-        <textarea id="text-${panel.id}" class="text-input" placeholder="比較するテキストを入力..."></textarea>
         <div class="panel-footer">
           <div class="char-count" data-count="${panel.id}">
             <span class="count-item"><span class="count-value">0</span> 文字</span>
@@ -494,9 +500,22 @@ const UI = (function () {
    */
   function handleClearAll() {
     PANELS.forEach(panel => {
-      handleClear(panel.id);
+      // イとロはクリアのみ、ハとニは削除
+      if (panel.id === 'ha' || panel.id === 'ni') {
+        handleRemovePanel(panel.id);
+      } else {
+        handleClear(panel.id);
+      }
     });
     elements.resultsSection.classList.add('hidden');
+
+    // 最初のパネルにフォーカス
+    if (PANELS.length > 0) {
+      const firstTextarea = document.getElementById(`text-${PANELS[0].id}`);
+      if (firstTextarea) {
+        firstTextarea.focus();
+      }
+    }
   }
 
   /**
