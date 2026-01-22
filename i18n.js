@@ -86,14 +86,11 @@ const I18n = (function () {
    * 言語を設定
    */
   function setLang(lang) {
-    console.log('I18n.setLang called with:', lang);
-    console.log('I18n.SUPPORTED_LANGS:', SUPPORTED_LANGS);
     if (!SUPPORTED_LANGS.includes(lang)) {
-      console.warn(`Unsupported language: ${lang}`);
+      console.warn(`I18n: Unsupported language: ${lang}`);
       return;
     }
     currentLang = lang;
-    console.log('I18n.currentLang set to:', currentLang);
     localStorage.setItem(STORAGE_KEY, lang);
     applyLanguage();
   }
@@ -102,9 +99,7 @@ const I18n = (function () {
    * 言語を切り替え
    */
   function toggleLang() {
-    console.log('I18n.toggleLang called, currentLang:', currentLang);
     const nextLang = currentLang === 'ja' ? 'en' : 'ja';
-    console.log('I18n.toggleLang nextLang:', nextLang);
     setLang(nextLang);
   }
 
@@ -113,14 +108,10 @@ const I18n = (function () {
    */
   function t(key, params = {}) {
     let text = translations[currentLang]?.[key] || translations[DEFAULT_LANG]?.[key] || key;
-    // デバッグ: 翻訳が見つからない場合
-    if (text === key && key !== 'title') {
-      console.log('I18n.t: translation not found for key:', key, 'lang:', currentLang);
-    }
 
-    // パラメータ置換
+    // パラメータ置換（グローバル置換に対応）
     Object.keys(params).forEach(param => {
-      text = text.replace(`{${param}}`, params[param]);
+      text = text.replaceAll(`{${param}}`, params[param]);
     });
 
     return text;
@@ -134,8 +125,6 @@ const I18n = (function () {
       console.warn('I18n: translations not loaded yet');
       return;
     }
-
-    console.log('I18n: applying language:', currentLang);
 
     // html lang 属性を更新
     document.documentElement.lang = currentLang;
@@ -158,6 +147,12 @@ const I18n = (function () {
           el.textContent = text;
         }
       }
+
+      // aria-label の更新（data-i18n-aria 属性がある場合）
+      if (el.dataset.i18nAria) {
+        const ariaKey = el.dataset.i18nAria;
+        el.setAttribute('aria-label', t(ariaKey));
+      }
     });
 
     // title 要素を更新
@@ -169,7 +164,6 @@ const I18n = (function () {
       const langIcon = langBtn.querySelector('.lang-icon');
       if (langIcon) {
         langIcon.textContent = currentLang === 'ja' ? 'EN' : 'JA';
-        console.log('I18n: lang button updated to:', langIcon.textContent);
       }
     }
 

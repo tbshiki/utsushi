@@ -73,7 +73,8 @@
 | 言語 | JavaScript (ES6+) |
 | 差分ライブラリ | [jsdiff](https://github.com/kpdecker/jsdiff) v5.1.0 |
 | フォント | Noto Sans JP, JetBrains Mono |
-| セキュリティ | CSP `connect-src 'none'` |
+| 多言語対応 | 日本語 / English |
+| セキュリティ | CSP (Content Security Policy) |
 
 ### ファイル構成
 
@@ -84,6 +85,12 @@ utsushi/
 ├── main.js         # エントリーポイント
 ├── diff-engine.js  # 差分計算エンジン
 ├── ui.js           # UI制御・テーマ・動的パネル管理
+├── i18n.js         # 多言語対応モジュール
+├── locales/        # 翻訳ファイル
+│   ├── ja.json     # 日本語
+│   └── en.json     # English
+├── scripts/        # ビルドスクリプト
+│   └── inject-analytics.js  # アナリティクス挿入
 ├── README.md       # このファイル
 └── DEPLOY.md       # デプロイ手順
 ```
@@ -92,10 +99,10 @@ utsushi/
 
 | 項目 | 設定 |
 |------|------|
-| CSP | `connect-src 'none'`（外部通信禁止） |
-| Cookie | 使用しない |
-| LocalStorage | テーマ設定のみ保存 |
-| 外部送信 | 完全禁止 |
+| CSP | Content Security Policy 適用 |
+| Cookie | アナリティクスのみ（オプション） |
+| LocalStorage | テーマ設定・言語設定を保存 |
+| テキストデータ | 外部送信なし（完全ローカル処理） |
 
 ## ローカル開発
 
