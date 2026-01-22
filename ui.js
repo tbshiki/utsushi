@@ -212,7 +212,14 @@ const UI = (function () {
     return lines.map(line => {
       const typeClass = getLineClass(line.type);
       const lineNumDisplay = line.lineNum !== null ? line.lineNum : '';
-      const content = escapeHtml(line.content);
+
+      // 単語レベル差分があればそれを使用、なければ通常のエスケープ
+      let content;
+      if (line.wordDiff && line.wordDiff.length > 0) {
+        content = renderWordDiff(line.wordDiff);
+      } else {
+        content = escapeHtml(line.content);
+      }
 
       return `
                 <div class="diff-line ${typeClass}">
@@ -220,6 +227,24 @@ const UI = (function () {
                     <span class="line-content">${content || '&nbsp;'}</span>
                 </div>
             `;
+    }).join('');
+  }
+
+  /**
+   * 単語レベル差分をHTML化
+   * @param {Array} wordDiff - 単語差分の配列
+   * @returns {string} HTML文字列
+   */
+  function renderWordDiff(wordDiff) {
+    return wordDiff.map(part => {
+      const text = escapeHtml(part.text);
+      if (part.type === 'added') {
+        return `<span class="word-added">${text}</span>`;
+      } else if (part.type === 'removed') {
+        return `<span class="word-removed">${text}</span>`;
+      } else {
+        return text;
+      }
     }).join('');
   }
 

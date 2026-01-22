@@ -57,7 +57,9 @@
 }
 
 /* Reset & Base */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -318,8 +320,15 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .results-section.hidden {
@@ -418,9 +427,17 @@ body {
     gap: var(--space-xs);
 }
 
-.diff-stats .stat.added { color: var(--diff-added-text); }
-.diff-stats .stat.removed { color: var(--diff-removed-text); }
-.diff-stats .stat.changed { color: var(--diff-changed-text); }
+.diff-stats .stat.added {
+    color: var(--diff-added-text);
+}
+
+.diff-stats .stat.removed {
+    color: var(--diff-removed-text);
+}
+
+.diff-stats .stat.changed {
+    color: var(--diff-changed-text);
+}
 
 .diff-panels {
     display: grid;
@@ -511,18 +528,22 @@ body {
     color: var(--diff-changed-text);
 }
 
-/* Word-level diff highlights */
+/* Word-level diff highlights - 濃い色で強調 */
 .word-added {
-    background: rgba(46, 160, 67, 0.4);
-    border-radius: 2px;
-    padding: 0 2px;
+    background: rgba(46, 160, 67, 0.6);
+    color: #ffffff;
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-weight: 500;
 }
 
 .word-removed {
-    background: rgba(248, 81, 73, 0.4);
-    border-radius: 2px;
-    padding: 0 2px;
+    background: rgba(248, 81, 73, 0.6);
+    color: #ffffff;
+    border-radius: 3px;
+    padding: 1px 4px;
     text-decoration: line-through;
+    font-weight: 500;
 }
 
 /* Empty state */
