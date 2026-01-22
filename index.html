@@ -37,6 +37,9 @@
             </h1>
             <p class="tagline">テキスト差分比較ツール</p>
         </div>
+        <button id="btn-theme-toggle" class="btn-theme-toggle" title="モード切り替え">
+            <span class="theme-icon">☀️</span>
+        </button>
     </header>
 
     <main class="main-container">
@@ -138,10 +141,13 @@
                     <li>✅ 本ツールはすべてローカル処理です</li>
                     <li>✅ 入力内容はサーバーに送信されません</li>
                     <li>⚠️ 入力データの責任は利用者にあります</li>
+                    <li>🎨 テーマはシステム設定に従います</li>
                 </ul>
             </div>
         </div>
     </footer>
+
+    <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/diff@5.1.0/dist/diff.min.js"></script>

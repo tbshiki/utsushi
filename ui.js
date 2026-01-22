@@ -25,6 +25,7 @@ const UI = (function () {
    */
   function init() {
     cacheElements();
+    setupTheme();
     setupEventListeners();
     updatePanelLayout();
   }
@@ -42,7 +43,9 @@ const UI = (function () {
       resultsSection: document.getElementById('results-section'),
       diffContainer: document.getElementById('diff-container'),
       btnPrivacyToggle: document.getElementById('btn-privacy-toggle'),
-      privacyDetails: document.getElementById('privacy-details')
+      privacyDetails: document.getElementById('privacy-details'),
+      btnThemeToggle: document.getElementById('btn-theme-toggle'),
+      toastContainer: document.getElementById('toast-container')
     };
   }
 
@@ -64,8 +67,37 @@ const UI = (function () {
       elements.btnPrivacyToggle.addEventListener('click', handlePrivacyToggle);
     }
 
-    // 既存パネルのイベント設定
-    setupPanelEvents();
+    // テーマ切り替えボタン
+    if (elements.btnThemeToggle) {
+      elements.btnThemeToggle.addEventListener('click', handleThemeToggle);
+    }
+
+    // イベントデリゲーション: 入力パネル内のイベントを集約
+    elements.inputPanels.addEventListener('click', (e) => {
+      // クリアボタン
+      const clearBtn = e.target.closest('.btn-clear');
+      if (clearBtn) {
+        const target = clearBtn.dataset.target;
+        handleClear(target);
+        return;
+      }
+
+      // 削除ボタン
+      const removeBtn = e.target.closest('.btn-remove-panel');
+      if (removeBtn) {
+        const panelId = removeBtn.dataset.panel;
+        handleRemovePanel(panelId);
+        return;
+      }
+    });
+
+    // 文字カウント (inputイベント)
+    elements.inputPanels.addEventListener('input', (e) => {
+      if (e.target.classList.contains('text-input')) {
+        const panelId = e.target.id.replace('text-', '');
+        updateCharCount(panelId, e.target.value);
+      }
+    });
 
     // キーボードショートカット
     document.addEventListener('keydown', (e) => {
@@ -77,32 +109,42 @@ const UI = (function () {
   }
 
   /**
-   * パネルのイベント設定
+   * テーマ設定（初期化）
    */
-  function setupPanelEvents() {
-    // クリアボタン
-    document.querySelectorAll('.btn-clear').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const target = e.currentTarget.dataset.target;
-        handleClear(target);
-      });
-    });
+  function setupTheme() {
+    // ローカルストレージまたはシステム設定を確認
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    // 削除ボタン（ハ、ニ用）
-    document.querySelectorAll('.btn-remove-panel').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const panelId = e.currentTarget.dataset.panel;
-        handleRemovePanel(panelId);
-      });
-    });
+    // デフォルトはシステム設定に従う (nullの場合はシステム設定)
+    const theme = savedTheme ? savedTheme : (prefersDark ? 'dark' : 'light');
 
-    // 文字カウント
-    document.querySelectorAll('.text-input').forEach(textarea => {
-      textarea.addEventListener('input', (e) => {
-        const panelId = e.target.id.replace('text-', '');
-        updateCharCount(panelId, e.target.value);
-      });
-    });
+    document.documentElement.setAttribute('data-theme', theme);
+    updateThemeIcon(theme);
+  }
+
+  /**
+   * テーマ切り替え
+   */
+  function handleThemeToggle() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+  }
+
+  /**
+   * テーマアイコン更新
+   */
+  function updateThemeIcon(theme) {
+    if (!elements.btnThemeToggle) return;
+
+    // アイコンのテキストまたはクラスを変更
+    const text = theme === 'dark' ? '☀️' : '🌙';
+    elements.btnThemeToggle.querySelector('.theme-icon').textContent = text;
+    elements.btnThemeToggle.title = theme === 'dark' ? 'ライトモードに切り替え' : 'ダークモードに切り替え';
   }
 
   /**
@@ -118,8 +160,6 @@ const UI = (function () {
     // 追加ボタンの前にパネルを挿入
     elements.addPanelContainer.insertAdjacentHTML('beforebegin', panelHtml);
 
-    // イベント再設定
-    setupPanelEvents();
     updatePanelLayout();
     updateAddButton();
   }
@@ -201,7 +241,7 @@ const UI = (function () {
     const activePanels = Object.keys(texts).filter(id => texts[id] && texts[id].trim());
 
     if (activePanels.length < 2) {
-      showError('比較するには少なくとも2つのテキストを入力してください');
+      showToast('比較するには少なくとも2つのテキストを入力してください', 'error');
       return;
     }
 
@@ -280,6 +320,7 @@ const UI = (function () {
 
   /**
    * 同期スクロール設定
+   * 水平スクロールも同期するように修正
    */
   function setupSyncScroll() {
     const diffPairs = document.querySelectorAll('.diff-pair');
@@ -290,21 +331,17 @@ const UI = (function () {
       if (left && right) {
         let isScrolling = false;
 
-        left.addEventListener('scroll', () => {
+        const sync = (source, target) => {
           if (!isScrolling) {
             isScrolling = true;
-            right.scrollTop = left.scrollTop;
+            target.scrollTop = source.scrollTop;
+            target.scrollLeft = source.scrollLeft;
             requestAnimationFrame(() => { isScrolling = false; });
           }
-        });
+        };
 
-        right.addEventListener('scroll', () => {
-          if (!isScrolling) {
-            isScrolling = true;
-            left.scrollTop = right.scrollTop;
-            requestAnimationFrame(() => { isScrolling = false; });
-          }
-        });
+        left.addEventListener('scroll', () => sync(left, right));
+        right.addEventListener('scroll', () => sync(right, left));
       }
     });
   }
@@ -428,10 +465,36 @@ const UI = (function () {
   }
 
   /**
-   * エラー表示
+   * トースト通知の表示
+   */
+  function showToast(message, type = 'info') {
+    if (!elements.toastContainer) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    elements.toastContainer.appendChild(toast);
+
+    // アニメーション用
+    requestAnimationFrame(() => {
+      toast.classList.add('show');
+    });
+
+    // 3秒後に消去
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.addEventListener('transitionend', () => {
+        toast.remove();
+      });
+    }, 3000);
+  }
+
+  /**
+   * エラー表示 (後方互換性のため残すがToastを使用)
    */
   function showError(message) {
-    alert(message);
+    showToast(message, 'error');
   }
 
   // Public API

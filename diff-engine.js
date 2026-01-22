@@ -289,6 +289,30 @@ const DiffEngine = (function () {
         return matchCount / maxLen;
     }
 
+    /**
+     * 複数のテキストを総当たりで比較
+     * @param {Object} textsMap - IDをキーとしたテキストのマップ { i: "...", ro: "..." }
+     * @returns {Array} 比較結果の配列
+     */
+    function compareMultiple(textsMap) {
+        const ids = Object.keys(textsMap);
+        const results = [];
+
+        for (let i = 0; i < ids.length; i++) {
+            for (let j = i + 1; j < ids.length; j++) {
+                const id1 = ids[i];
+                const id2 = ids[j];
+                const result = compareLines(textsMap[id1], textsMap[id2]);
+                results.push({
+                    id1,
+                    id2,
+                    result
+                });
+            }
+        }
+        return results;
+    }
+
     // Public API
     return {
         compareLines,
