@@ -41,7 +41,9 @@ const UI = (function () {
       btnCompare: document.getElementById('btn-compare'),
       btnClearAll: document.getElementById('btn-clear-all'),
       resultsSection: document.getElementById('results-section'),
-      diffContainer: document.getElementById('diff-container')
+      diffContainer: document.getElementById('diff-container'),
+      btnPrivacyToggle: document.getElementById('btn-privacy-toggle'),
+      privacyDetails: document.getElementById('privacy-details')
     };
   }
 
@@ -57,6 +59,11 @@ const UI = (function () {
 
     // パネル追加ボタン
     elements.btnAddPanel.addEventListener('click', handleAddPanel);
+
+    // プライバシー折りたたみボタン
+    if (elements.btnPrivacyToggle) {
+      elements.btnPrivacyToggle.addEventListener('click', handlePrivacyToggle);
+    }
 
     // 既存パネルのイベント設定
     setupPanelEvents();
@@ -408,6 +415,21 @@ const UI = (function () {
       handleClear(panel.id);
     });
     elements.resultsSection.classList.add('hidden');
+  }
+
+  /**
+   * プライバシー折りたたみ切り替え
+   */
+  function handlePrivacyToggle() {
+    const isHidden = elements.privacyDetails.classList.contains('hidden');
+
+    if (isHidden) {
+      elements.privacyDetails.classList.remove('hidden');
+      elements.btnPrivacyToggle.classList.add('active');
+    } else {
+      elements.privacyDetails.classList.add('hidden');
+      elements.btnPrivacyToggle.classList.remove('active');
+    }
   }
 
   /**
