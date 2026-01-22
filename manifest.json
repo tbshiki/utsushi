@@ -1,15 +1,20 @@
 {
   "name": "utsushi - テキスト差分比較ツール",
   "short_name": "utsushi",
+  "description": "完全ローカル処理のテキスト差分比較ツール。サーバーに送信せず、ブラウザ内で安全に比較。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0969da",
+  "orientation": "any",
+  "categories": ["utilities", "productivity"],
+  "lang": "ja",
   "icons": [
     {
       "src": "logo.png",
-      "sizes": "192x192 512x512",
-      "type": "image/png"
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

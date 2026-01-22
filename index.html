@@ -30,9 +30,46 @@
     <link rel="canonical" href="https://utsushi.pages.dev/">
     <meta property="og:url" content="https://utsushi.pages.dev/">
     <meta property="og:image" content="https://utsushi.pages.dev/logo.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:locale" content="ja_JP">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="utsushi - テキスト差分比較ツール">
+    <meta name="twitter:description" content="複数テキストをブラウザ内で比較。完全ローカル処理でプライバシー保護。">
+    <meta name="twitter:image" content="https://utsushi.pages.dev/logo.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "utsushi",
+        "description": "完全ローカル処理のテキスト差分比較ツール。サーバーに送信せず、ブラウザ内で安全に比較。",
+        "url": "https://utsushi.pages.dev/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "JPY"
+        },
+        "featureList": [
+            "テキスト差分比較",
+            "完全ローカル処理",
+            "プライバシー保護",
+            "複数テキスト対応"
+        ]
+    }
+    </script>
 </head>
 
 <body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
+
     <header class="header">
         <div class="header-content">
             <h1 class="logo">
@@ -55,9 +92,9 @@
         </button>
     </header>
 
-    <main class="main-container">
+    <main id="main-content" class="main-container">
         <!-- Input Section -->
-        <section class="input-section">
+        <section class="input-section" aria-label="テキスト入力エリア">
             <div id="input-panels" class="input-panels">
                 <!-- イ (Base) -->
                 <div class="input-panel" data-panel="i">
@@ -107,42 +144,42 @@
 
                 <!-- Add Panel Button -->
                 <div id="add-panel-container" class="add-panel-container">
-                    <button id="btn-add-panel" class="btn-add-panel" title="テキストパネルを追加">
-                        <span class="add-icon">+</span>
+                    <button id="btn-add-panel" class="btn-add-panel" title="テキストパネルを追加" aria-label="比較用のテキストパネルを追加">
+                        <span class="add-icon" aria-hidden="true">+</span>
                         <span class="add-text">パネル追加</span>
                     </button>
                 </div>
             </div>
 
             <div class="action-bar">
-                <button id="btn-compare" class="btn-primary">
-                    <span class="btn-icon">⇄</span>
+                <button id="btn-compare" class="btn-primary" aria-label="入力したテキストの差分を比較">
+                    <span class="btn-icon" aria-hidden="true">⇄</span>
                     差分を比較
                 </button>
-                <button id="btn-clear-all" class="btn-secondary">
+                <button id="btn-clear-all" class="btn-secondary" aria-label="すべての入力をクリア">
                     すべてクリア
                 </button>
             </div>
         </section>
 
         <!-- Results Section -->
-        <section id="results-section" class="results-section hidden">
+        <section id="results-section" class="results-section hidden" aria-label="比較結果" aria-live="polite">
             <div class="results-header">
                 <h2 class="results-title">比較結果</h2>
-                <div class="legend">
-                    <span class="legend-item added">
-                        <span class="legend-color"></span>追加
+                <div class="legend" role="list" aria-label="差分の凡例">
+                    <span class="legend-item added" role="listitem">
+                        <span class="legend-color" aria-hidden="true"></span>追加
                     </span>
-                    <span class="legend-item removed">
-                        <span class="legend-color"></span>削除
+                    <span class="legend-item removed" role="listitem">
+                        <span class="legend-color" aria-hidden="true"></span>削除
                     </span>
-                    <span class="legend-item changed">
-                        <span class="legend-color"></span>変更
+                    <span class="legend-item changed" role="listitem">
+                        <span class="legend-color" aria-hidden="true"></span>変更
                     </span>
                 </div>
             </div>
 
-            <div id="diff-container" class="diff-container">
+            <div id="diff-container" class="diff-container" role="region" aria-label="差分表示エリア">
                 <!-- Diff results will be dynamically generated -->
             </div>
         </section>
