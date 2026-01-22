@@ -9,7 +9,7 @@ const I18n = (function () {
 
   // 対応言語
   const SUPPORTED_LANGS = ['ja', 'en'];
-  const DEFAULT_LANG = 'ja';
+  const DEFAULT_LANG = 'en';
   const STORAGE_KEY = 'utsushi-lang';
 
   // 現在の言語

@@ -61,7 +61,7 @@
   "privacy.section3.clarity": "<strong>Microsoft Clarity</strong>: ユーザーの操作パターン（クリック、スクロール等）を匿名化して収集します",
   "privacy.section3.note": "これらのツールはCookieを使用する場合がありますが、<strong>入力されたテキスト内容は一切収集されません</strong>。",
   "privacy.section3.notice.title": "⚠️ Microsoft Clarity のセッション録画について",
-  "privacy.section3.notice.content1": "Microsoft Clarity にはユーザーの操作を録画する機能があります。本ツールでは入力エリアをマスク対象として設定していますが、技術的な制約により完全な除外を保証することはできません。",
+  "privacy.section3.notice.content1": "本ツールでは入力されたテキストの送信は行っておりませんが、Microsoft Clarity にはユーザーの操作を録画する機能があります。本ツールでは入力エリアをマスク対象として設定していますが、技術的な制約により完全な除外を保証することはできません。",
   "privacy.section3.notice.content2": "機密性の高いテキストを扱う場合は、ブラウザの設定でサードパーティCookieをブロックするか、Do Not Track（DNT）を有効にすることをご検討ください。",
   "privacy.section4.title": "4. Cookieについて",
   "privacy.section4.intro": "本ツールでは以下の目的でCookieまたはローカルストレージを使用します。",
