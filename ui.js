@@ -23,11 +23,18 @@ const UI = (function () {
   /**
    * 初期化
    */
-  function init() {
+  async function init() {
     cacheElements();
     setupTheme();
     setupEventListeners();
     updatePanelLayout();
+
+    // i18n 初期化（非同期）
+    if (typeof I18n !== 'undefined') {
+      await I18n.init();
+      // 言語変更時にパネル名を更新
+      window.addEventListener('languageChanged', updatePanelNames);
+    }
   }
 
   /**
@@ -45,6 +52,7 @@ const UI = (function () {
       btnPrivacyToggle: document.getElementById('btn-privacy-toggle'),
       privacyDetails: document.getElementById('privacy-details'),
       btnThemeToggle: document.getElementById('btn-theme-toggle'),
+      btnLangToggle: document.getElementById('btn-lang-toggle'),
       toastContainer: document.getElementById('toast-container'),
       // Privacy Policy Modal
       btnPrivacyPolicy: document.getElementById('btn-privacy-policy'),
@@ -74,6 +82,11 @@ const UI = (function () {
     // テーマ切り替えボタン
     if (elements.btnThemeToggle) {
       elements.btnThemeToggle.addEventListener('click', handleThemeToggle);
+    }
+
+    // 言語切り替えボタン
+    if (elements.btnLangToggle) {
+      elements.btnLangToggle.addEventListener('click', handleLangToggle);
     }
 
     // プライバシーポリシーモーダル
@@ -213,34 +226,59 @@ const UI = (function () {
    * パネルHTML生成
    */
   function createPanelHtml(panel) {
+    const t = typeof I18n !== 'undefined' ? I18n.t : (key) => key;
+    const panelName = typeof I18n !== 'undefined' ? I18n.getPanelName(panel.id) : panel.name;
+    const placeholder = t('input.placeholder.compare');
+    const badgeText = t('input.label.badge');
+    const clearTitle = t('input.clear.title');
+    const removeTitle = t('input.remove.title');
+    const charsLabel = t('count.chars');
+    const wordsLabel = t('count.words');
+    const linesLabel = t('count.lines');
+
     return `
       <div class="input-panel" data-panel="${panel.id}">
-        <textarea id="text-${panel.id}" class="text-input" placeholder="比較するテキストを入力..." data-clarity-mask="true"></textarea>
+        <textarea id="text-${panel.id}" class="text-input" placeholder="${placeholder}" data-clarity-mask="true" data-i18n="input.placeholder.compare" data-i18n-attr="placeholder"></textarea>
         <div class="panel-header">
           <label class="panel-label" for="text-${panel.id}">
-            <span class="label-badge compare">比較</span>
-            ${panel.name}
+            <span class="label-badge compare" data-i18n="input.label.badge">${badgeText}</span>
+            <span data-i18n="panel.${panel.id}">${panelName}</span>
           </label>
           <div class="panel-actions">
-            <button class="btn-clear" data-target="${panel.id}" title="クリア" tabindex="-1" aria-label="${panel.name}のテキストをクリア">
+            <button class="btn-clear" data-target="${panel.id}" title="${clearTitle}" aria-label="${panelName}のテキストをクリア" data-i18n="input.clear.title" data-i18n-attr="title">
               <span aria-hidden="true">×</span>
             </button>
-            <button class="btn-remove-panel" data-panel="${panel.id}" title="パネル削除" tabindex="-1" aria-label="${panel.name}のパネルを削除">
+            <button class="btn-remove-panel" data-panel="${panel.id}" title="${removeTitle}" aria-label="${panelName}のパネルを削除" data-i18n="input.remove.title" data-i18n-attr="title">
               <span aria-hidden="true">🗑</span>
             </button>
           </div>
         </div>
         <div class="panel-footer">
           <div class="char-count" data-count="${panel.id}">
-            <span class="count-item"><span class="count-value">0</span> 文字</span>
+            <span class="count-item"><span class="count-value">0</span> <span data-i18n="count.chars">${charsLabel}</span></span>
             <span class="count-separator">·</span>
-            <span class="count-item"><span class="count-value">0</span> 単語</span>
+            <span class="count-item"><span class="count-value">0</span> <span data-i18n="count.words">${wordsLabel}</span></span>
             <span class="count-separator">·</span>
-            <span class="count-item"><span class="count-value">1</span> 行</span>
+            <span class="count-item"><span class="count-value">1</span> <span data-i18n="count.lines">${linesLabel}</span></span>
           </div>
         </div>
       </div>
     `;
+  }
+
+  /**
+   * パネル名を更新（言語切り替え時）
+   */
+  function updatePanelNames() {
+    if (typeof I18n === 'undefined') return;
+
+    // 既存のパネルのラベルを更新
+    PANELS.forEach(panel => {
+      const labelSpan = document.querySelector(`[data-panel="${panel.id}"] .panel-label [data-i18n="panel.${panel.id}"]`);
+      if (labelSpan) {
+        labelSpan.textContent = I18n.getPanelName(panel.id);
+      }
+    });
   }
 
   /**
@@ -280,7 +318,8 @@ const UI = (function () {
     const activePanels = Object.keys(texts).filter(id => texts[id] && texts[id].trim());
 
     if (activePanels.length < 2) {
-      showToast('比較するには少なくとも2つのテキストを入力してください', 'error');
+      const errorMsg = typeof I18n !== 'undefined' ? I18n.t('toast.error.single') : '比較するには少なくとも2つのテキストを入力してください';
+      showToast(errorMsg, 'error');
       return;
     }
 
@@ -308,6 +347,9 @@ const UI = (function () {
    * パネルIDからラベル名を取得
    */
   function getPanelName(id) {
+    if (typeof I18n !== 'undefined') {
+      return I18n.getPanelName(id);
+    }
     const panel = PANELS.find(p => p.id === id);
     return panel ? panel.name : id;
   }
@@ -332,11 +374,12 @@ const UI = (function () {
     const name1 = getPanelName(id1);
     const name2 = getPanelName(id2);
     const pairId = `${id1}-${id2}`;
+    const vsText = typeof I18n !== 'undefined' ? I18n.t('diff.vs') : 'vs';
 
     return `
       <div class="diff-pair" id="diff-${pairId}">
         <div class="diff-pair-header">
-          <span class="diff-pair-title">${name1} vs ${name2}</span>
+          <span class="diff-pair-title">${name1} ${vsText} ${name2}</span>
           <div class="diff-stats">
             <span class="stat added">+${result.stats.added}</span>
             <span class="stat removed">-${result.stats.removed}</span>
@@ -582,6 +625,15 @@ const UI = (function () {
     document.body.style.overflow = '';
     // フォーカスを元のボタンに戻す
     elements.btnPrivacyPolicy?.focus();
+  }
+
+  /**
+   * 言語切り替え
+   */
+  function handleLangToggle() {
+    if (typeof I18n !== 'undefined') {
+      I18n.toggleLang();
+    }
   }
 
   /**

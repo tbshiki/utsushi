@@ -7,7 +7,10 @@
   "background_color": "#ffffff",
   "theme_color": "#0969da",
   "orientation": "any",
-  "categories": ["utilities", "productivity"],
+  "categories": [
+    "utilities",
+    "productivity"
+  ],
   "lang": "ja",
   "icons": [
     {

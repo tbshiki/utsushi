@@ -176,8 +176,16 @@ body {
     font-size: 0.875rem;
 }
 
+/* Header Actions */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
 /* Theme Toggle Button */
-.btn-theme-toggle {
+.btn-theme-toggle,
+.btn-lang-toggle {
     background: transparent;
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-sm);
@@ -192,7 +200,8 @@ body {
     height: 32px;
 }
 
-.btn-theme-toggle:hover {
+.btn-theme-toggle:hover,
+.btn-lang-toggle:hover {
     background: var(--bg-hover);
     color: var(--text-primary);
     border-color: var(--text-secondary);
@@ -200,6 +209,12 @@ body {
 
 .theme-icon {
     font-size: 1rem;
+    line-height: 1;
+}
+
+.lang-icon {
+    font-size: 0.7rem;
+    font-weight: 700;
     line-height: 1;
 }
 
