@@ -121,6 +121,7 @@
 html {
     font-size: 16px;
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -344,7 +345,7 @@ body {
     border: none;
     color: var(--text-primary);
     font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     line-height: 1.5;
     resize: vertical;
 }
@@ -1118,21 +1119,30 @@ a:focus-visible {
     }
 
     .header {
-        flex-direction: column;
-        gap: var(--space-md);
-        padding: var(--space-md);
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-sm);
+        padding: var(--space-sm) var(--space-md);
     }
 
     .header-content {
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        gap: var(--space-xs);
+        gap: var(--space-sm);
     }
 
-    .btn-theme-toggle {
-        position: absolute;
-        top: var(--space-md);
-        right: var(--space-md);
+    .tagline {
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+
+    .btn-theme-toggle,
+    .btn-lang-toggle {
+        position: static;
+    }
+
+    .header-actions {
+        gap: var(--space-xs);
     }
 
     .main-container {
@@ -1149,18 +1159,44 @@ a:focus-visible {
     }
 
     .footer-content {
+        display: flex;
         flex-direction: column;
-        gap: var(--space-lg);
+        gap: var(--space-md);
     }
 
     .footer-info {
         text-align: left;
+        flex-wrap: wrap;
+        row-gap: var(--space-xs);
+    }
+
+    .footer-separator {
+        display: none;
+    }
+
+    .footer-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
     }
 
     .toast-container {
         left: 20px;
         right: 20px;
         bottom: 20px;
+    }
+
+    .text-input {
+        font-size: 16px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }
 
