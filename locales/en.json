@@ -43,6 +43,8 @@
   "diff.empty": "No text available",
   "footer.privacy.policy": "Privacy Policy",
   "footer.repo.link": "GitHub Repository",
+  "footer.copyright": "© 2026 utsushi",
+  "footer.from": "from taptoclicks.com",
   "footer.privacy.toggle": "Privacy",
   "footer.privacy.local": "This tool processes everything locally",
   "footer.privacy.noSend": "Input content is not sent to any server",
