@@ -17,6 +17,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const INDEX_PATH = path.join(__dirname, '..', 'index.html');
+const HEADERS_PATH = path.join(__dirname, '..', '_headers');
 const PLACEHOLDER = '<!-- __ANALYTICS_SCRIPTS__ -->';
 const NONCE_PLACEHOLDER = '__CSP_NONCE__';
 
@@ -34,6 +35,13 @@ function resolveIndexPath() {
     return path.resolve(process.cwd(), OUTPUT_DIR, 'index.html');
   }
   return INDEX_PATH;
+}
+
+function resolveHeadersPath() {
+  if (OUTPUT_DIR) {
+    return path.resolve(process.cwd(), OUTPUT_DIR, '_headers');
+  }
+  return HEADERS_PATH;
 }
 
 /**
@@ -75,7 +83,9 @@ function main() {
   const nonce = crypto.randomBytes(16).toString('base64');
   console.log(`   CSP nonce: ${nonce}`);
   const indexPath = resolveIndexPath();
+  const headersPath = resolveHeadersPath();
   console.log(`   Target index.html: ${indexPath}`);
+  console.log(`   Target _headers: ${headersPath}`);
 
   // index.html を読み込み
   let html = fs.readFileSync(indexPath, 'utf-8');
@@ -111,6 +121,19 @@ function main() {
   // ファイルを書き出し
   fs.writeFileSync(indexPath, html, 'utf-8');
   console.log('📝 index.html updated.');
+
+  if (fs.existsSync(headersPath)) {
+    let headers = fs.readFileSync(headersPath, 'utf-8');
+    if (headers.includes(NONCE_PLACEHOLDER)) {
+      headers = headers.split(NONCE_PLACEHOLDER).join(nonce);
+      fs.writeFileSync(headersPath, headers, 'utf-8');
+      console.log('📝 _headers updated.');
+    } else {
+      console.log('⚠️  CSP nonce placeholder not found in _headers.');
+    }
+  } else {
+    console.log('ℹ️  _headers not found. Skipping CSP header update.');
+  }
 }
 
 main();
