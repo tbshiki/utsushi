@@ -73,14 +73,7 @@
     <header class="header">
         <div class="header-content">
             <h1 class="logo">
-                <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path class="logo-path-muted" d="M16 2H8a2 2 0 0 0-2 2v1h9a2 2 0 0 1 2 2v13h1a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"></path>
-                    <path d="M14 6H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z"></path>
-                    <path d="M7 10h6"></path>
-                    <path d="M7 14h6"></path>
-                    <path d="M7 18h4"></path>
-                </svg>
+                <img class="logo-icon" src="logo.png" alt="" aria-hidden="true">
                 utsushi
             </h1>
             <p class="tagline" data-i18n="header.tagline">Text Diff Tool</p>
@@ -286,7 +279,9 @@
 
                 <section class="policy-section">
                     <h3 data-i18n="privacy.section6.title">6. Contact</h3>
-                    <p data-i18n="privacy.section6.content">For inquiries about this privacy policy, please use the Issues section of the GitHub repository.</p>
+                    <p data-i18n="privacy.section6.content" data-i18n-html="true">
+                        For inquiries about this privacy policy, please use the <a href="https://github.com/tbshiki/utsushi/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a>.
+                    </p>
                 </section>
 
                 <section class="policy-section">
