@@ -19,6 +19,7 @@ const UI = (function () {
 
   // DOM キャッシュ
   let elements = {};
+  let lastFocusedElement = null;
 
   /**
    * 初期化
@@ -32,8 +33,13 @@ const UI = (function () {
     // i18n 初期化（非同期）
     if (typeof I18n !== 'undefined') {
       await I18n.init();
+      updatePanelNames();
+      refreshAllCounts();
       // 言語変更時にパネル名を更新
-      window.addEventListener('languageChanged', updatePanelNames);
+      window.addEventListener('languageChanged', () => {
+        updatePanelNames();
+        refreshAllCounts();
+      });
     }
   }
 
@@ -104,12 +110,7 @@ const UI = (function () {
     if (elements.privacyModal) {
       // 背景クリックで閉じる
       elements.privacyModal.querySelector('.modal-backdrop')?.addEventListener('click', closePrivacyModal);
-      // Escキーで閉じる
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !elements.privacyModal.hidden) {
-          closePrivacyModal();
-        }
-      });
+      document.addEventListener('keydown', handleModalKeydown);
     }
 
     // イベントデリゲーション: 入力パネル内のイベントを集約
@@ -184,7 +185,6 @@ const UI = (function () {
     // アイコンのテキストまたはクラスを変更
     const text = theme === 'dark' ? '☀️' : '🌙';
     elements.btnThemeToggle.querySelector('.theme-icon').textContent = text;
-    elements.btnThemeToggle.title = theme === 'dark' ? 'ライトモードに切り替え' : 'ダークモードに切り替え';
   }
 
   /**
@@ -202,6 +202,7 @@ const UI = (function () {
 
     updatePanelLayout();
     updateAddButton();
+    updatePanelNames();
 
     // 新しいパネルの入力エリアにフォーカス
     const newTextarea = document.getElementById(`text-${nextPanel.id}`);
@@ -232,6 +233,8 @@ const UI = (function () {
     const badgeText = t('input.label.badge');
     const clearTitle = t('input.clear.title');
     const removeTitle = t('input.remove.title');
+    const clearAria = typeof I18n !== 'undefined' ? I18n.t('input.clear.aria', { panel: panelName }) : `Clear text in panel ${panelName}`;
+    const removeAria = typeof I18n !== 'undefined' ? I18n.t('input.remove.aria', { panel: panelName }) : `Remove panel ${panelName}`;
     const charsLabel = t('count.chars');
     const wordsLabel = t('count.words');
     const linesLabel = t('count.lines');
@@ -245,10 +248,10 @@ const UI = (function () {
             <span data-i18n="panel.${panel.id}">${panelName}</span>
           </label>
           <div class="panel-actions">
-            <button class="btn-clear" data-target="${panel.id}" title="${clearTitle}" aria-label="${panelName}のテキストをクリア" data-i18n="input.clear.title" data-i18n-attr="title">
+            <button class="btn-clear" data-target="${panel.id}" title="${clearTitle}" aria-label="${clearAria}" data-i18n="input.clear.title" data-i18n-attr="title">
               <span aria-hidden="true">×</span>
             </button>
-            <button class="btn-remove-panel" data-panel="${panel.id}" title="${removeTitle}" aria-label="${panelName}のパネルを削除" data-i18n="input.remove.title" data-i18n-attr="title">
+            <button class="btn-remove-panel" data-panel="${panel.id}" title="${removeTitle}" aria-label="${removeAria}" data-i18n="input.remove.title" data-i18n-attr="title">
               <span aria-hidden="true">🗑</span>
             </button>
           </div>
@@ -274,9 +277,23 @@ const UI = (function () {
 
     // 既存のパネルのラベルを更新
     PANELS.forEach(panel => {
-      const labelSpan = document.querySelector(`[data-panel="${panel.id}"] .panel-label [data-i18n="panel.${panel.id}"]`);
+      const panelEl = document.querySelector(`[data-panel="${panel.id}"]`);
+      if (!panelEl) return;
+
+      const panelName = I18n.getPanelName(panel.id);
+      const labelSpan = panelEl.querySelector(`.panel-label [data-i18n="panel.${panel.id}"]`);
       if (labelSpan) {
-        labelSpan.textContent = I18n.getPanelName(panel.id);
+        labelSpan.textContent = panelName;
+      }
+
+      const clearBtn = panelEl.querySelector('.btn-clear');
+      if (clearBtn) {
+        clearBtn.setAttribute('aria-label', I18n.t('input.clear.aria', { panel: panelName }));
+      }
+
+      const removeBtn = panelEl.querySelector('.btn-remove-panel');
+      if (removeBtn) {
+        removeBtn.setAttribute('aria-label', I18n.t('input.remove.aria', { panel: panelName }));
       }
     });
   }
@@ -432,7 +449,8 @@ const UI = (function () {
    */
   function renderLines(lines) {
     if (lines.length === 0) {
-      return '<div class="diff-empty">テキストがありません</div>';
+      const emptyText = typeof I18n !== 'undefined' ? I18n.t('diff.empty') : 'No text';
+      return `<div class="diff-empty">${emptyText}</div>`;
     }
 
     return lines.map(line => {
@@ -504,12 +522,15 @@ const UI = (function () {
     const countEl = document.querySelector(`[data-count="${panelId}"]`);
     if (countEl) {
       const stats = calculateTextStats(value);
+      const charsLabel = typeof I18n !== 'undefined' ? I18n.t('count.chars') : 'chars';
+      const wordsLabel = typeof I18n !== 'undefined' ? I18n.t('count.words') : 'words';
+      const linesLabel = typeof I18n !== 'undefined' ? I18n.t('count.lines') : 'lines';
       countEl.innerHTML = `
-        <span class="count-item"><span class="count-value">${stats.chars}</span> 文字</span>
+        <span class="count-item"><span class="count-value">${stats.chars}</span> ${charsLabel}</span>
         <span class="count-separator">·</span>
-        <span class="count-item"><span class="count-value">${stats.words}</span> 単語</span>
+        <span class="count-item"><span class="count-value">${stats.words}</span> ${wordsLabel}</span>
         <span class="count-separator">·</span>
-        <span class="count-item"><span class="count-value">${stats.lines}</span> 行</span>
+        <span class="count-item"><span class="count-value">${stats.lines}</span> ${linesLabel}</span>
       `;
     }
   }
@@ -610,10 +631,13 @@ const UI = (function () {
    */
   function openPrivacyModal() {
     if (!elements.privacyModal) return;
+    lastFocusedElement = document.activeElement;
     elements.privacyModal.hidden = false;
     document.body.style.overflow = 'hidden';
+    setPageAriaHidden(true);
     // フォーカスをモーダルに移動
-    elements.btnModalClose?.focus();
+    const focusables = getFocusableElements(elements.privacyModal);
+    (focusables[0] || elements.btnModalClose)?.focus();
   }
 
   /**
@@ -623,8 +647,13 @@ const UI = (function () {
     if (!elements.privacyModal) return;
     elements.privacyModal.hidden = true;
     document.body.style.overflow = '';
+    setPageAriaHidden(false);
     // フォーカスを元のボタンに戻す
-    elements.btnPrivacyPolicy?.focus();
+    if (lastFocusedElement) {
+      lastFocusedElement.focus();
+    } else {
+      elements.btnPrivacyPolicy?.focus();
+    }
   }
 
   /**
@@ -669,6 +698,87 @@ const UI = (function () {
    */
   function showError(message) {
     showToast(message, 'error');
+  }
+
+  /**
+   * 文字カウントを再描画（言語切り替え用）
+   */
+  function refreshAllCounts() {
+    PANELS.forEach(panel => {
+      const textarea = document.getElementById(`text-${panel.id}`);
+      if (textarea) {
+        updateCharCount(panel.id, textarea.value);
+      }
+    });
+  }
+
+  /**
+   * モーダル内フォーカストラップ
+   */
+  function handleModalKeydown(e) {
+    if (!elements.privacyModal || elements.privacyModal.hidden) return;
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closePrivacyModal();
+      return;
+    }
+
+    if (e.key !== 'Tab') return;
+
+    const focusables = getFocusableElements(elements.privacyModal);
+    if (focusables.length === 0) {
+      e.preventDefault();
+      return;
+    }
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+
+    if (e.shiftKey && active === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  /**
+   * フォーカス可能要素を取得
+   */
+  function getFocusableElements(container) {
+    const selector = [
+      'a[href]',
+      'button:not([disabled])',
+      'textarea:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])'
+    ].join(',');
+    return Array.from(container.querySelectorAll(selector)).filter(el => !el.hasAttribute('hidden'));
+  }
+
+  /**
+   * モーダル表示中は背面をスクリーンリーダーから隠す
+   */
+  function setPageAriaHidden(isHidden) {
+    ['header', 'main', 'footer'].forEach(tag => {
+      const el = document.querySelector(tag);
+      if (!el) return;
+      if (isHidden) {
+        el.setAttribute('aria-hidden', 'true');
+        if ('inert' in el) {
+          el.inert = true;
+        }
+      } else {
+        el.removeAttribute('aria-hidden');
+        if ('inert' in el) {
+          el.inert = false;
+        }
+      }
+    });
   }
 
   // Public API

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.clarity.ms 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://www.googletagmanager.com https://www.clarity.ms https://c.bing.com; connect-src 'self' https://www.google-analytics.com https://www.clarity.ms https://c.bing.com;">
+        content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.clarity.ms 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://www.googletagmanager.com https://www.clarity.ms https://c.bing.com; connect-src 'self' https://www.google-analytics.com https://www.clarity.ms https://c.bing.com;">
 
     <!-- Analytics (injected at deploy time) -->
     <!-- __ANALYTICS_SCRIPTS__ -->
@@ -74,10 +74,8 @@
         <div class="header-content">
             <h1 class="logo">
                 <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    style="background: var(--accent-primary); padding: 4px; color: white;">
-                    <path d="M16 2H8a2 2 0 0 0-2 2v1h9a2 2 0 0 1 2 2v13h1a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"
-                        style="opacity: 0.6"></path>
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path class="logo-path-muted" d="M16 2H8a2 2 0 0 0-2 2v1h9a2 2 0 0 1 2 2v13h1a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"></path>
                     <path d="M14 6H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z"></path>
                     <path d="M7 10h6"></path>
                     <path d="M7 14h6"></path>
@@ -164,7 +162,6 @@
                 <button id="btn-clear-all" class="btn-secondary" aria-label="Clear all inputs" data-i18n="action.clearAll.aria" data-i18n-attr="aria-label">
                     <span data-i18n="action.clearAll">Clear All</span>
                 </button>
-                </button>
             </div>
         </section>
 
@@ -238,7 +235,10 @@
 
                 <section class="policy-section">
                     <h3 data-i18n="privacy.section2.title">2. Handling of Text Data</h3>
-                    <p data-i18n="privacy.section2.intro" data-i18n-html="true">Text data entered into this tool is <strong>processed entirely locally within your browser</strong>.</p>
+                    <p>
+                        <span data-i18n="privacy.section2.intro.prefix">Text data entered into this tool is </span>
+                        <strong data-i18n="privacy.section2.intro.emphasis">processed entirely locally within your browser</strong><span data-i18n="privacy.section2.intro.suffix">.</span>
+                    </p>
                     <ul>
                         <li>✅ <span data-i18n="privacy.section2.item1">Input content is not sent to any server</span></li>
                         <li>✅ <span data-i18n="privacy.section2.item2">Input content is not saved or recorded</span></li>
@@ -250,10 +250,13 @@
                     <h3 data-i18n="privacy.section3.title">3. About Analytics</h3>
                     <p data-i18n="privacy.section3.intro">This tool may use the following analytics tools for service improvement.</p>
                     <ul>
-                        <li data-i18n="privacy.section3.ga" data-i18n-html="true"><strong>Google Analytics</strong>: Collects statistical information such as visitor count, page views, and device usage</li>
-                        <li data-i18n="privacy.section3.clarity" data-i18n-html="true"><strong>Microsoft Clarity</strong>: Collects anonymized user interaction patterns (clicks, scrolls, etc.)</li>
+                        <li><strong data-i18n="privacy.section3.ga.label">Google Analytics</strong>: <span data-i18n="privacy.section3.ga.body">Collects statistical information such as visitor count, page views, and device usage</span></li>
+                        <li><strong data-i18n="privacy.section3.clarity.label">Microsoft Clarity</strong>: <span data-i18n="privacy.section3.clarity.body">Collects anonymized user interaction patterns (clicks, scrolls, etc.)</span></li>
                     </ul>
-                    <p data-i18n="privacy.section3.note" data-i18n-html="true">These tools may use cookies, but <strong>the content of your text input is never collected</strong>.</p>
+                    <p>
+                        <span data-i18n="privacy.section3.note.prefix">These tools may use cookies, but </span>
+                        <strong data-i18n="privacy.section3.note.emphasis">the content of your text input is never collected</strong><span data-i18n="privacy.section3.note.suffix">.</span>
+                    </p>
 
                     <div class="policy-notice">
                         <p><strong data-i18n="privacy.section3.notice.title">⚠️ About Microsoft Clarity Session Recording</strong></p>

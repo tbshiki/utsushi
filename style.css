@@ -169,6 +169,13 @@ body {
     height: 28px;
     border-radius: var(--radius-sm);
     object-fit: contain;
+    background: var(--accent-primary);
+    padding: 4px;
+    color: white;
+}
+
+.logo-path-muted {
+    opacity: 0.6;
 }
 
 .tagline {
