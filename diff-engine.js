@@ -6,6 +6,36 @@
 const DiffEngine = (function () {
     'use strict';
 
+    let wordSegmenter = null;
+
+    /**
+     * Intl.Segmenter を取得（対応していない場合は null）
+     * @returns {Intl.Segmenter|null}
+     */
+    function getWordSegmenter() {
+        if (wordSegmenter) return wordSegmenter;
+        if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+            wordSegmenter = new Intl.Segmenter(undefined, { granularity: 'word' });
+            return wordSegmenter;
+        }
+        return null;
+    }
+
+    /**
+     * テキストを単語/記号単位で分割（Segmenter 対応時）
+     * @param {string} text
+     * @returns {Array|null}
+     */
+    function tokenizeText(text) {
+        const segmenter = getWordSegmenter();
+        if (!segmenter) return null;
+        const tokens = [];
+        for (const segment of segmenter.segment(text)) {
+            tokens.push(segment.segment);
+        }
+        return tokens;
+    }
+
     /**
      * 2つのテキストを行単位で比較（単語レベル差分対応）
      * @param {string} textA - 基準テキスト
@@ -206,29 +236,34 @@ const DiffEngine = (function () {
      * @returns {Object} 差分結果
      */
     function compareWords(lineA, lineB) {
-        const diff = Diff.diffWords(lineA, lineB);
+        const tokensA = tokenizeText(lineA);
+        const tokensB = tokenizeText(lineB);
+        const diff = (tokensA && tokensB)
+            ? Diff.diffArrays(tokensA, tokensB)
+            : Diff.diffWords(lineA, lineB);
 
         const leftParts = [];
         const rightParts = [];
 
         diff.forEach(part => {
+            const valueText = Array.isArray(part.value) ? part.value.join('') : part.value;
             if (part.added) {
                 rightParts.push({
-                    text: part.value,
+                    text: valueText,
                     type: 'added'
                 });
             } else if (part.removed) {
                 leftParts.push({
-                    text: part.value,
+                    text: valueText,
                     type: 'removed'
                 });
             } else {
                 leftParts.push({
-                    text: part.value,
+                    text: valueText,
                     type: 'unchanged'
                 });
                 rightParts.push({
-                    text: part.value,
+                    text: valueText,
                     type: 'unchanged'
                 });
             }
