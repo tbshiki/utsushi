@@ -29,6 +29,7 @@ const UI = (function () {
     setupTheme();
     setupEventListeners();
     updatePanelLayout();
+    updateTabOrder();
 
     // i18n 初期化（非同期）
     if (typeof I18n !== 'undefined') {
@@ -48,6 +49,7 @@ const UI = (function () {
    */
   function cacheElements() {
     elements = {
+      skipLink: document.querySelector('.skip-link'),
       inputPanels: document.getElementById('input-panels'),
       addPanelContainer: document.getElementById('add-panel-container'),
       btnAddPanel: document.getElementById('btn-add-panel'),
@@ -115,14 +117,6 @@ const UI = (function () {
 
     // イベントデリゲーション: 入力パネル内のイベントを集約
     elements.inputPanels.addEventListener('click', (e) => {
-      // クリアボタン
-      const clearBtn = e.target.closest('.btn-clear');
-      if (clearBtn) {
-        const target = clearBtn.dataset.target;
-        handleClear(target);
-        return;
-      }
-
       // 削除ボタン
       const removeBtn = e.target.closest('.btn-remove-panel');
       if (removeBtn) {
@@ -203,6 +197,7 @@ const UI = (function () {
     updatePanelLayout();
     updateAddButton();
     updatePanelNames();
+    updateTabOrder();
 
     // 新しいパネルの入力エリアにフォーカス
     const newTextarea = document.getElementById(`text-${nextPanel.id}`);
@@ -220,6 +215,7 @@ const UI = (function () {
       panel.remove();
       updatePanelLayout();
       updateAddButton();
+      updateTabOrder();
     }
   }
 
@@ -231,9 +227,7 @@ const UI = (function () {
     const panelName = typeof I18n !== 'undefined' ? I18n.getPanelName(panel.id) : panel.name;
     const placeholder = t('input.placeholder.compare');
     const badgeText = t('input.label.badge');
-    const clearTitle = t('input.clear.title');
     const removeTitle = t('input.remove.title');
-    const clearAria = typeof I18n !== 'undefined' ? I18n.t('input.clear.aria', { panel: panelName }) : `Clear text in panel ${panelName}`;
     const removeAria = typeof I18n !== 'undefined' ? I18n.t('input.remove.aria', { panel: panelName }) : `Remove panel ${panelName}`;
     const charsLabel = t('count.chars');
     const wordsLabel = t('count.words');
@@ -248,9 +242,6 @@ const UI = (function () {
             <span data-i18n="panel.${panel.id}">${panelName}</span>
           </label>
           <div class="panel-actions">
-            <button class="btn-clear" data-target="${panel.id}" title="${clearTitle}" aria-label="${clearAria}" data-i18n="input.clear.title" data-i18n-attr="title">
-              <span aria-hidden="true">×</span>
-            </button>
             <button class="btn-remove-panel" data-panel="${panel.id}" title="${removeTitle}" aria-label="${removeAria}" data-i18n="input.remove.title" data-i18n-attr="title">
               <span aria-hidden="true">🗑</span>
             </button>
@@ -286,11 +277,6 @@ const UI = (function () {
         labelSpan.textContent = panelName;
       }
 
-      const clearBtn = panelEl.querySelector('.btn-clear');
-      if (clearBtn) {
-        clearBtn.setAttribute('aria-label', I18n.t('input.clear.aria', { panel: panelName }));
-      }
-
       const removeBtn = panelEl.querySelector('.btn-remove-panel');
       if (removeBtn) {
         removeBtn.setAttribute('aria-label', I18n.t('input.remove.aria', { panel: panelName }));
@@ -303,7 +289,8 @@ const UI = (function () {
    */
   function updatePanelLayout() {
     const currentPanels = document.querySelectorAll('.input-panel').length;
-    elements.inputPanels.style.gridTemplateColumns = `repeat(${Math.min(currentPanels, 3)}, 1fr)`;
+    if (!elements.inputPanels) return;
+    elements.inputPanels.dataset.panels = String(currentPanels);
   }
 
   /**
@@ -316,6 +303,54 @@ const UI = (function () {
     } else {
       elements.addPanelContainer.style.display = 'flex';
     }
+  }
+
+  /**
+   * フォーカス移動順を最適化
+   * 入力欄 -> パネル追加 -> クリア/削除 の順にする
+   */
+  function updateTabOrder() {
+    let tabIndex = 1;
+
+    if (elements.skipLink) {
+      elements.skipLink.setAttribute('tabindex', tabIndex++);
+    }
+    if (elements.btnLangToggle) {
+      elements.btnLangToggle.setAttribute('tabindex', tabIndex++);
+    }
+    if (elements.btnThemeToggle) {
+      elements.btnThemeToggle.setAttribute('tabindex', tabIndex++);
+    }
+
+    PANELS.forEach(panel => {
+      const textarea = document.getElementById(`text-${panel.id}`);
+      if (textarea) {
+        textarea.setAttribute('tabindex', tabIndex++);
+      }
+    });
+
+    if (elements.btnAddPanel && elements.addPanelContainer?.style.display !== 'none') {
+      elements.btnAddPanel.setAttribute('tabindex', tabIndex++);
+    } else if (elements.btnAddPanel) {
+      elements.btnAddPanel.setAttribute('tabindex', '-1');
+    }
+
+    if (elements.btnCompare) {
+      elements.btnCompare.setAttribute('tabindex', tabIndex++);
+    }
+    if (elements.btnClearAll) {
+      elements.btnClearAll.setAttribute('tabindex', tabIndex++);
+    }
+
+    PANELS.forEach(panel => {
+      const panelEl = document.querySelector(`[data-panel="${panel.id}"]`);
+      if (!panelEl) return;
+
+      const removeBtn = panelEl.querySelector('.btn-remove-panel');
+      if (removeBtn) {
+        removeBtn.setAttribute('tabindex', tabIndex++);
+      }
+    });
   }
 
   /**

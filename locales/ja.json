@@ -8,7 +8,7 @@
   "header.theme.aria": "ダークモードとライトモードを切り替え",
   "header.lang.title": "言語切り替え",
   "header.lang.aria": "言語を切り替え",
-  "skip.link": "メインコンテンツへスキップ",
+  "skip.link": "入力エリアへスキップ",
   "input.section.aria": "テキスト入力エリア",
   "input.placeholder.base": "テキストを入力...",
   "input.placeholder.compare": "比較するテキストを入力...",

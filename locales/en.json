@@ -8,7 +8,7 @@
   "header.theme.aria": "Toggle between dark and light mode",
   "header.lang.title": "Switch language",
   "header.lang.aria": "Switch language",
-  "skip.link": "Skip to main content",
+  "skip.link": "Skip to input area",
   "input.section.aria": "Text input area",
   "input.placeholder.base": "Enter text...",
   "input.placeholder.compare": "Enter text to compare...",
