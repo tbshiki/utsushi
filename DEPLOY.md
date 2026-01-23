@@ -1,6 +1,6 @@
 # utsushi デプロイ手順
 
-## Cloudflare Pages へのデプロイ
+## Github リポジトリから Cloudflare Pages へのデプロイ
 
 ### 前提条件
 
@@ -11,42 +11,32 @@
 
 #### 1. GitHubリポジトリの準備
 
-```bash
-# リポジトリ初期化（未実施の場合）
-cd utsushi
-git init
-git add .
-git commit -m "Initial commit: utsushi v0.1.0"
-
-# GitHubリポジトリを作成し、プッシュ
-git remote add origin https://github.com/your-username/utsushi.git
-git branch -M main
-git push -u origin main
-```
+[utsushi GitHubリポジトリ](https://github.com/tbshiki/utsushi)
 
 #### 2. Cloudflare Pages でプロジェクト作成
 
+## Github と接続
+
 1. [Cloudflare Dashboard](https://dash.cloudflare.com/) にログイン
-2. 左メニューから「Pages」を選択
-3. 「プロジェクトを作成」をクリック
-4. 「Gitに接続」を選択
+2. 左メニューから「コンピューティングとAI > Workers & Pages」を選択
+3. 「アプリケーションを作成する」をクリック
+4. 「Connect Github」からGitHubと連携して進む
 
-#### 3. リポジトリ連携
+## リポジトリを選択
 
-1. GitHubアカウントを連携
-2. `utsushi` リポジトリを選択
-3. 「セットアップを開始」をクリック
+自身のアカウントにクローンしている場合は `utsushi` リポジトリを選択
+パブリックリポジトリを使用する場合は、
+Git URL 経由でパブリックリポジトリをクローンする からGit リポジトリURL を入力
 
-#### 4. ビルド設定
+## ビルド・デプロイ
 
 | 項目 | 設定値 |
 |------|--------|
-| プロジェクト名 | `utsushi`（任意） |
-| 本番ブランチ | `main` |
-| ビルドコマンド | (空欄のまま) |
-| ビルド出力ディレクトリ | `/` |
+| プロジェクト名 | `utsushi` |
+| ビルドコマンド | (空欄) |
+| デプロイコマンド | `npx wrangler deploy` |
+非本番ブランチのビルド 
 
-#### 5. デプロイ実行
 
 1. 「保存してデプロイ」をクリック
 2. デプロイ完了まで数分待機
