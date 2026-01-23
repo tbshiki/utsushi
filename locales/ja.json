@@ -62,7 +62,7 @@
   "privacy.section2.item2": "入力内容は保存・記録されません",
   "privacy.section2.item3": "ページを閉じると入力データは消去されます",
   "privacy.section3.title": "3. アクセス解析について",
-  "privacy.section3.intro": "本ツールでは、サービス改善のため以下のアクセス解析ツールを使用する場合があります。",
+  "privacy.section3.intro": "本ツールでは、サービス改善のため以下のアクセス解析ツールを使用しています。",
   "privacy.section3.ga.label": "Google Analytics",
   "privacy.section3.ga.body": "訪問者数、ページビュー、利用デバイス等の統計情報を収集します",
   "privacy.section3.clarity.label": "Microsoft Clarity",
