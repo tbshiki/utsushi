@@ -90,7 +90,9 @@ utsushi/
 │   ├── ja.json     # 日本語
 │   └── en.json     # English
 ├── scripts/        # ビルドスクリプト
+│   ├── build.js     # dist生成
 │   └── inject-analytics.js  # アナリティクス挿入
+├── dist/           # ビルド出力（配信対象）
 ├── README.md       # このファイル
 └── DEPLOY.md       # デプロイ手順
 ```
@@ -121,6 +123,18 @@ npx http-server .
 
 ブラウザで http://localhost:3000 にアクセス
 
+## ビルド（配信用）
+
+不要ファイルを配信対象から除外するため、ビルドで `dist/` を作成します。
+
+```bash
+# dist/ を生成
+node scripts/build.js
+
+# dist/ を確認
+npx serve dist
+```
+
 ## デプロイ
 
 デプロイ手順は [DEPLOY.md](DEPLOY.md) を参照してください。
@@ -136,6 +150,10 @@ npx http-server .
 MIT License
 
 ## バージョン履歴
+
+### v0.2.2 (2026-01-23)
+- 配信用ビルド（dist出力）を追加
+- アナリティクス挿入をdistに適用
 
 ### v0.2.1 (2026-01-23)
 - 入力パネルの4枚時は2x2レイアウト、スマホは1列に最適化

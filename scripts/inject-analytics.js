@@ -23,6 +23,18 @@ const NONCE_PLACEHOLDER = '__CSP_NONCE__';
 // 環境変数からIDを取得
 const GA_ID = process.env.GA_MEASUREMENT_ID || '';
 const CLARITY_ID = process.env.CLARITY_PROJECT_ID || '';
+const OUTPUT_DIR = process.env.OUTPUT_DIR || '';
+const INDEX_ENV_PATH = process.env.INDEX_PATH || '';
+
+function resolveIndexPath() {
+  if (INDEX_ENV_PATH) {
+    return path.resolve(process.cwd(), INDEX_ENV_PATH);
+  }
+  if (OUTPUT_DIR) {
+    return path.resolve(process.cwd(), OUTPUT_DIR, 'index.html');
+  }
+  return INDEX_PATH;
+}
 
 /**
  * Google Analytics スクリプトを生成
@@ -62,9 +74,11 @@ function main() {
   console.log(`   CLARITY_PROJECT_ID: ${CLARITY_ID ? '✓ Set' : '✗ Not set'}`);
   const nonce = crypto.randomBytes(16).toString('base64');
   console.log(`   CSP nonce: ${nonce}`);
+  const indexPath = resolveIndexPath();
+  console.log(`   Target index.html: ${indexPath}`);
 
   // index.html を読み込み
-  let html = fs.readFileSync(INDEX_PATH, 'utf-8');
+  let html = fs.readFileSync(indexPath, 'utf-8');
 
   // プレースホルダーが存在するか確認
   const hasPlaceholder = html.includes(PLACEHOLDER);
@@ -95,7 +109,7 @@ function main() {
   }
 
   // ファイルを書き出し
-  fs.writeFileSync(INDEX_PATH, html, 'utf-8');
+  fs.writeFileSync(indexPath, html, 'utf-8');
   console.log('📝 index.html updated.');
 }
 

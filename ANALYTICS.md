@@ -15,12 +15,12 @@
 
 ```bash
 # 環境変数を設定してスクリプトを実行
-GA_MEASUREMENT_ID=G-XXXXXXXXXX CLARITY_PROJECT_ID=abcdefghij node scripts/inject-analytics.js
+GA_MEASUREMENT_ID=G-XXXXXXXXXX CLARITY_PROJECT_ID=abcdefghij node scripts/build.js
 ```
 
 Windows (PowerShell):
 ```powershell
-$env:GA_MEASUREMENT_ID="G-XXXXXXXXXX"; $env:CLARITY_PROJECT_ID="abcdefghij"; node scripts/inject-analytics.js
+$env:GA_MEASUREMENT_ID="G-XXXXXXXXXX"; $env:CLARITY_PROJECT_ID="abcdefghij"; node scripts/build.js
 ```
 
 ## Cloudflare Pages での設定
@@ -39,8 +39,8 @@ $env:GA_MEASUREMENT_ID="G-XXXXXXXXXX"; $env:CLARITY_PROJECT_ID="abcdefghij"; nod
 
 | 項目 | 値 |
 |------|-----|
-| ビルドコマンド | `node scripts/inject-analytics.js` |
-| 出力ディレクトリ | `/` |
+| ビルドコマンド | `node scripts/build.js` |
+| 出力ディレクトリ | `dist` |
 
 ## セキュリティ
 
