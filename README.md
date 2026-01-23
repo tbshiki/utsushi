@@ -149,7 +149,15 @@ npx serve dist
 
 MIT License
 
+Copyright (c) 2026 tbshiki
+
 ## バージョン履歴
+
+### v0.2.3 (2026-01-23)
+- 日本語を含む単語分割の精度改善（Intl.Segmenter 対応）
+- CSP をハードニング（base-uri/object-src/frame-ancestors/form-action 追加）
+- DOM生成を安全なAPIに変更（XSS耐性向上）
+- フッターに著作情報とリポジトリリンクを追加
 
 ### v0.2.2 (2026-01-23)
 - 配信用ビルド（dist出力）を追加

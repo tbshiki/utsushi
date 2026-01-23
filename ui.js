@@ -20,6 +20,19 @@ const UI = (function () {
   // DOM キャッシュ
   let elements = {};
   let lastFocusedElement = null;
+  let wordSegmenter = null;
+
+  /**
+   * Intl.Segmenter を取得（対応していない場合は null）
+   */
+  function getWordSegmenter() {
+    if (wordSegmenter) return wordSegmenter;
+    if (typeof Intl !== 'undefined' && typeof Intl.Segmenter === 'function') {
+      wordSegmenter = new Intl.Segmenter(undefined, { granularity: 'word' });
+      return wordSegmenter;
+    }
+    return null;
+  }
 
   /**
    * 初期化
@@ -188,10 +201,11 @@ const UI = (function () {
 
     if (!nextPanel) return;
 
-    const panelHtml = createPanelHtml(nextPanel);
+    const panelEl = createPanelElement(nextPanel);
+    if (!panelEl) return;
 
     // 追加ボタンの前にパネルを挿入
-    elements.addPanelContainer.insertAdjacentHTML('beforebegin', panelHtml);
+    elements.inputPanels.insertBefore(panelEl, elements.addPanelContainer);
 
     updatePanelLayout();
     updateAddButton();
@@ -217,9 +231,9 @@ const UI = (function () {
   }
 
   /**
-   * パネルHTML生成
+   * パネル要素を生成
    */
-  function createPanelHtml(panel) {
+  function createPanelElement(panel) {
     const t = typeof I18n !== 'undefined' ? I18n.t : (key) => key;
     const panelName = typeof I18n !== 'undefined' ? I18n.getPanelName(panel.id) : panel.name;
     const placeholder = t('input.placeholder.compare');
@@ -230,31 +244,70 @@ const UI = (function () {
     const wordsLabel = t('count.words');
     const linesLabel = t('count.lines');
 
-    return `
-      <div class="input-panel" data-panel="${panel.id}">
-        <textarea id="text-${panel.id}" class="text-input" placeholder="${placeholder}" data-clarity-mask="true" data-i18n="input.placeholder.compare" data-i18n-attr="placeholder"></textarea>
-        <div class="panel-header">
-          <label class="panel-label" for="text-${panel.id}">
-            <span class="label-badge compare" data-i18n="input.label.badge">${badgeText}</span>
-            <span data-i18n="panel.${panel.id}">${panelName}</span>
-          </label>
-          <div class="panel-actions">
-            <button class="btn-remove-panel" data-panel="${panel.id}" title="${removeTitle}" aria-label="${removeAria}" data-i18n="input.remove.title" data-i18n-attr="title">
-              <span aria-hidden="true">🗑</span>
-            </button>
-          </div>
-        </div>
-        <div class="panel-footer">
-          <div class="char-count" data-count="${panel.id}">
-            <span class="count-item"><span class="count-value">0</span> <span data-i18n="count.chars">${charsLabel}</span></span>
-            <span class="count-separator">·</span>
-            <span class="count-item"><span class="count-value">0</span> <span data-i18n="count.words">${wordsLabel}</span></span>
-            <span class="count-separator">·</span>
-            <span class="count-item"><span class="count-value">1</span> <span data-i18n="count.lines">${linesLabel}</span></span>
-          </div>
-        </div>
-      </div>
-    `;
+    const panelEl = document.createElement('div');
+    panelEl.className = 'input-panel';
+    panelEl.dataset.panel = panel.id;
+
+    const textarea = document.createElement('textarea');
+    textarea.id = `text-${panel.id}`;
+    textarea.className = 'text-input';
+    textarea.placeholder = placeholder;
+    textarea.dataset.clarityMask = 'true';
+    textarea.dataset.i18n = 'input.placeholder.compare';
+    textarea.dataset.i18nAttr = 'placeholder';
+    panelEl.appendChild(textarea);
+
+    const header = document.createElement('div');
+    header.className = 'panel-header';
+
+    const label = document.createElement('label');
+    label.className = 'panel-label';
+    label.setAttribute('for', `text-${panel.id}`);
+
+    const badge = document.createElement('span');
+    badge.className = 'label-badge compare';
+    badge.dataset.i18n = 'input.label.badge';
+    badge.textContent = badgeText;
+    label.appendChild(badge);
+
+    const labelName = document.createElement('span');
+    labelName.dataset.i18n = `panel.${panel.id}`;
+    labelName.textContent = panelName;
+    label.appendChild(labelName);
+
+    header.appendChild(label);
+
+    const actions = document.createElement('div');
+    actions.className = 'panel-actions';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn-remove-panel';
+    removeBtn.dataset.panel = panel.id;
+    removeBtn.title = removeTitle;
+    removeBtn.setAttribute('aria-label', removeAria);
+    removeBtn.dataset.i18n = 'input.remove.title';
+    removeBtn.dataset.i18nAttr = 'title';
+
+    const removeIcon = document.createElement('span');
+    removeIcon.setAttribute('aria-hidden', 'true');
+    removeIcon.textContent = '🗑';
+    removeBtn.appendChild(removeIcon);
+
+    actions.appendChild(removeBtn);
+    header.appendChild(actions);
+    panelEl.appendChild(header);
+
+    const footer = document.createElement('div');
+    footer.className = 'panel-footer';
+
+    const countEl = document.createElement('div');
+    countEl.className = 'char-count';
+    countEl.dataset.count = panel.id;
+    renderCount(countEl, { chars: 0, words: 0, lines: 1 }, { charsLabel, wordsLabel, linesLabel });
+    footer.appendChild(countEl);
+    panelEl.appendChild(footer);
+
+    return panelEl;
   }
 
   /**
@@ -325,7 +378,7 @@ const UI = (function () {
     }
 
     // 結果表示エリアをクリアして表示
-    elements.diffContainer.innerHTML = '';
+    elements.diffContainer.textContent = '';
     elements.resultsSection.classList.remove('hidden');
 
     // 全ペアの比較を生成
@@ -333,8 +386,8 @@ const UI = (function () {
 
     pairs.forEach(([id1, id2]) => {
       const result = DiffEngine.compareLines(texts[id1], texts[id2]);
-      const pairHtml = createDiffPairHtml(id1, id2, result);
-      elements.diffContainer.insertAdjacentHTML('beforeend', pairHtml);
+      const pairEl = createDiffPairElement(id1, id2, result);
+      elements.diffContainer.appendChild(pairEl);
     });
 
     // 同期スクロール設定
@@ -369,36 +422,83 @@ const UI = (function () {
   }
 
   /**
-   * 差分ペアHTML生成
+   * 差分ペア要素生成
    */
-  function createDiffPairHtml(id1, id2, result) {
+  function createDiffPairElement(id1, id2, result) {
     const name1 = getPanelName(id1);
     const name2 = getPanelName(id2);
     const pairId = `${id1}-${id2}`;
     const vsText = typeof I18n !== 'undefined' ? I18n.t('diff.vs') : 'vs';
 
-    return `
-      <div class="diff-pair" id="diff-${pairId}">
-        <div class="diff-pair-header">
-          <span class="diff-pair-title">${name1} ${vsText} ${name2}</span>
-          <div class="diff-stats">
-            <span class="stat added">+${result.stats.added}</span>
-            <span class="stat removed">-${result.stats.removed}</span>
-            ${result.stats.changed > 0 ? `<span class="stat changed">~${result.stats.changed}</span>` : ''}
-          </div>
-        </div>
-        <div class="diff-panels">
-          <div class="diff-panel" data-side="left">
-            <div class="diff-panel-header">${name1}</div>
-            <div class="diff-content" id="diff-${pairId}-left">${renderLines(result.left)}</div>
-          </div>
-          <div class="diff-panel" data-side="right">
-            <div class="diff-panel-header">${name2}</div>
-            <div class="diff-content" id="diff-${pairId}-right">${renderLines(result.right)}</div>
-          </div>
-        </div>
-      </div>
-    `;
+    const pairEl = document.createElement('div');
+    pairEl.className = 'diff-pair';
+    pairEl.id = `diff-${pairId}`;
+
+    const header = document.createElement('div');
+    header.className = 'diff-pair-header';
+
+    const title = document.createElement('span');
+    title.className = 'diff-pair-title';
+    title.textContent = `${name1} ${vsText} ${name2}`;
+    header.appendChild(title);
+
+    const stats = document.createElement('div');
+    stats.className = 'diff-stats';
+
+    const added = document.createElement('span');
+    added.className = 'stat added';
+    added.textContent = `+${result.stats.added}`;
+    stats.appendChild(added);
+
+    const removed = document.createElement('span');
+    removed.className = 'stat removed';
+    removed.textContent = `-${result.stats.removed}`;
+    stats.appendChild(removed);
+
+    if (result.stats.changed > 0) {
+      const changed = document.createElement('span');
+      changed.className = 'stat changed';
+      changed.textContent = `~${result.stats.changed}`;
+      stats.appendChild(changed);
+    }
+
+    header.appendChild(stats);
+    pairEl.appendChild(header);
+
+    const panels = document.createElement('div');
+    panels.className = 'diff-panels';
+
+    const leftPanel = document.createElement('div');
+    leftPanel.className = 'diff-panel';
+    leftPanel.dataset.side = 'left';
+    const leftHeader = document.createElement('div');
+    leftHeader.className = 'diff-panel-header';
+    leftHeader.textContent = name1;
+    const leftContent = document.createElement('div');
+    leftContent.className = 'diff-content';
+    leftContent.id = `diff-${pairId}-left`;
+    leftContent.appendChild(renderLinesFragment(result.left));
+    leftPanel.appendChild(leftHeader);
+    leftPanel.appendChild(leftContent);
+
+    const rightPanel = document.createElement('div');
+    rightPanel.className = 'diff-panel';
+    rightPanel.dataset.side = 'right';
+    const rightHeader = document.createElement('div');
+    rightHeader.className = 'diff-panel-header';
+    rightHeader.textContent = name2;
+    const rightContent = document.createElement('div');
+    rightContent.className = 'diff-content';
+    rightContent.id = `diff-${pairId}-right`;
+    rightContent.appendChild(renderLinesFragment(result.right));
+    rightPanel.appendChild(rightHeader);
+    rightPanel.appendChild(rightContent);
+
+    panels.appendChild(leftPanel);
+    panels.appendChild(rightPanel);
+    pairEl.appendChild(panels);
+
+    return pairEl;
   }
 
   /**
@@ -431,46 +531,65 @@ const UI = (function () {
   /**
    * 行をHTML化
    */
-  function renderLines(lines) {
+  function renderLinesFragment(lines) {
+    const fragment = document.createDocumentFragment();
     if (lines.length === 0) {
       const emptyText = typeof I18n !== 'undefined' ? I18n.t('diff.empty') : 'No text';
-      return `<div class="diff-empty">${emptyText}</div>`;
+      const emptyEl = document.createElement('div');
+      emptyEl.className = 'diff-empty';
+      emptyEl.textContent = emptyText;
+      fragment.appendChild(emptyEl);
+      return fragment;
     }
 
-    return lines.map(line => {
+    lines.forEach(line => {
       const typeClass = getLineClass(line.type);
-      const lineNumDisplay = line.lineNum !== null ? line.lineNum : '';
+      const lineNumDisplay = line.lineNum !== null ? String(line.lineNum) : '';
 
-      let content;
+      const lineEl = document.createElement('div');
+      lineEl.className = `diff-line ${typeClass}`.trim();
+
+      const lineNum = document.createElement('span');
+      lineNum.className = 'line-number';
+      lineNum.textContent = lineNumDisplay;
+      lineEl.appendChild(lineNum);
+
+      const lineContent = document.createElement('span');
+      lineContent.className = 'line-content';
       if (line.wordDiff && line.wordDiff.length > 0) {
-        content = renderWordDiff(line.wordDiff);
+        lineContent.appendChild(renderWordDiffFragment(line.wordDiff));
       } else {
-        content = escapeHtml(line.content);
+        lineContent.textContent = line.content || '\u00a0';
       }
+      lineEl.appendChild(lineContent);
 
-      return `
-        <div class="diff-line ${typeClass}">
-          <span class="line-number">${lineNumDisplay}</span>
-          <span class="line-content">${content || '&nbsp;'}</span>
-        </div>
-      `;
-    }).join('');
+      fragment.appendChild(lineEl);
+    });
+
+    return fragment;
   }
 
   /**
    * 単語レベル差分をHTML化
    */
-  function renderWordDiff(wordDiff) {
-    return wordDiff.map(part => {
-      const text = escapeHtml(part.text);
+  function renderWordDiffFragment(wordDiff) {
+    const fragment = document.createDocumentFragment();
+    wordDiff.forEach(part => {
       if (part.type === 'added') {
-        return `<span class="word-added">${text}</span>`;
+        const span = document.createElement('span');
+        span.className = 'word-added';
+        span.textContent = part.text;
+        fragment.appendChild(span);
       } else if (part.type === 'removed') {
-        return `<span class="word-removed">${text}</span>`;
+        const span = document.createElement('span');
+        span.className = 'word-removed';
+        span.textContent = part.text;
+        fragment.appendChild(span);
       } else {
-        return text;
+        fragment.appendChild(document.createTextNode(part.text));
       }
-    }).join('');
+    });
+    return fragment;
   }
 
   /**
@@ -487,19 +606,6 @@ const UI = (function () {
   }
 
   /**
-   * HTMLエスケープ
-   */
-  function escapeHtml(text) {
-    if (!text) return '';
-    return text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
-  /**
    * 文字カウント更新
    */
   function updateCharCount(panelId, value) {
@@ -509,14 +615,45 @@ const UI = (function () {
       const charsLabel = typeof I18n !== 'undefined' ? I18n.t('count.chars') : 'chars';
       const wordsLabel = typeof I18n !== 'undefined' ? I18n.t('count.words') : 'words';
       const linesLabel = typeof I18n !== 'undefined' ? I18n.t('count.lines') : 'lines';
-      countEl.innerHTML = `
-        <span class="count-item"><span class="count-value">${stats.chars}</span> ${charsLabel}</span>
-        <span class="count-separator">·</span>
-        <span class="count-item"><span class="count-value">${stats.words}</span> ${wordsLabel}</span>
-        <span class="count-separator">·</span>
-        <span class="count-item"><span class="count-value">${stats.lines}</span> ${linesLabel}</span>
-      `;
+      renderCount(countEl, stats, { charsLabel, wordsLabel, linesLabel });
     }
+  }
+
+  /**
+   * 文字カウントのDOMを描画
+   */
+  function renderCount(container, stats, labels) {
+    container.textContent = '';
+    container.appendChild(createCountItem(stats.chars, labels.charsLabel, 'count.chars'));
+    container.appendChild(createCountSeparator());
+    container.appendChild(createCountItem(stats.words, labels.wordsLabel, 'count.words'));
+    container.appendChild(createCountSeparator());
+    container.appendChild(createCountItem(stats.lines, labels.linesLabel, 'count.lines'));
+  }
+
+  function createCountItem(value, labelText, i18nKey) {
+    const item = document.createElement('span');
+    item.className = 'count-item';
+
+    const valueSpan = document.createElement('span');
+    valueSpan.className = 'count-value';
+    valueSpan.textContent = String(value);
+    item.appendChild(valueSpan);
+    item.appendChild(document.createTextNode(' '));
+
+    const labelSpan = document.createElement('span');
+    labelSpan.dataset.i18n = i18nKey;
+    labelSpan.textContent = labelText;
+    item.appendChild(labelSpan);
+
+    return item;
+  }
+
+  function createCountSeparator() {
+    const sep = document.createElement('span');
+    sep.className = 'count-separator';
+    sep.textContent = '·';
+    return sep;
   }
 
   /**
@@ -546,6 +683,17 @@ const UI = (function () {
    */
   function countWords(text) {
     if (!text || !text.trim()) return 0;
+
+    const segmenter = getWordSegmenter();
+    if (segmenter) {
+      let count = 0;
+      for (const segment of segmenter.segment(text)) {
+        if (segment.isWordLike) {
+          count += 1;
+        }
+      }
+      return count;
+    }
 
     // 英語の単語（スペース区切り）
     const englishWords = text.match(/[a-zA-Z]+(?:'[a-zA-Z]+)?/g) || [];

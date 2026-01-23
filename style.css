@@ -383,14 +383,16 @@ a:focus-visible {
 
 .count-item {
     display: inline-flex;
-    align-items: center;
+    align-items: baseline;
     gap: 2px;
+    line-height: 1;
 }
 
 .count-value {
     font-family: var(--font-mono);
     font-weight: 500;
     color: var(--text-secondary);
+    line-height: 1;
 }
 
 .count-separator {
