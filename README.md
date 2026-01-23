@@ -153,6 +153,13 @@ Copyright (c) 2026 tbshiki
 
 ## バージョン履歴
 
+### v0.2.4 (2026-01-23)
+- モバイル入力時の拡大を抑制（フォントサイズ調整）
+- モバイルのヘッダー/フッターレイアウトを改善
+- CSPでGA4の送信先を拡張（region対応）
+- プライバシー表記の英日表現を「使用しています」に統一
+- prefers-reduced-motion 対応
+
 ### v0.2.3 (2026-01-23)
 - 日本語を含む単語分割の精度改善（Intl.Segmenter 対応）
 - CSP をハードニング（base-uri/object-src/frame-ancestors/form-action 追加）

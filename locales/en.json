@@ -62,7 +62,7 @@
   "privacy.section2.item2": "Input content is not saved or recorded",
   "privacy.section2.item3": "Input data is deleted when you close the page",
   "privacy.section3.title": "3. About Analytics",
-  "privacy.section3.intro": "This tool may use the following analytics tools for service improvement.",
+  "privacy.section3.intro": "This tool uses the following analytics tools for service improvement.",
   "privacy.section3.ga.label": "Google Analytics",
   "privacy.section3.ga.body": "Collects statistical information such as visitor count, page views, and device usage",
   "privacy.section3.clarity.label": "Microsoft Clarity",
