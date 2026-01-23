@@ -15,32 +15,33 @@
 
 #### 2. Cloudflare Pages でプロジェクト作成
 
-## Github と接続
 
 1. [Cloudflare Dashboard](https://dash.cloudflare.com/) にログイン
 2. 左メニューから「コンピューティングとAI > Workers & Pages」を選択
 3. 「アプリケーションを作成する」をクリック
-4. 「Connect Github」からGitHubと連携して進む
+4. Pages を導入しようとお考えですか? 始める をクリック
+5. 既存の Git リポジトリをインポートするの始める をクリック
+6. Github と連携してリポジトリを選択
+7. セットアップの開始 をクリック
 
-## リポジトリを選択
-
-自身のアカウントにクローンしている場合は `utsushi` リポジトリを選択
-パブリックリポジトリを使用する場合は、
-Git URL 経由でパブリックリポジトリをクローンする からGit リポジトリURL を入力
 
 ## ビルド・デプロイ
 
 | 項目 | 設定値 |
 |------|--------|
 | プロジェクト名 | `utsushi` |
+| プロダクションブランチ | `main` |
+
+ビルドの設定
+| フレームワークプリセット | なし |
 | ビルドコマンド | (空欄) |
-| デプロイコマンド | `npx wrangler deploy` |
-非本番ブランチのビルド 
+| ビルド出力ディレクトリ | /(空欄) |
 
 
-1. 「保存してデプロイ」をクリック
-2. デプロイ完了まで数分待機
-3. `https://utsushi.pages.dev` のようなURLが発行される
+「保存してデプロイ」をクリック
+デプロイ完了まで数分待機
+`https://utsushi.pages.dev` のようなURLが発行される
+
 
 ### カスタムドメイン設定（オプション）
 
@@ -70,7 +71,7 @@ Git URL 経由でパブリックリポジトリをクローンする からGit �
 | 項目 | 設定値 |
 |------|--------|
 | ビルドコマンド | `node scripts/inject-analytics.js` |
-| ビルド出力ディレクトリ | `/` |
+| ビルド出力ディレクトリ | `.` |
 
 > **注意**: 環境変数が設定されていない場合、アナリティクス機能は無効になります（プレースホルダーは削除されます）。
 
@@ -80,48 +81,6 @@ Git URL 経由でパブリックリポジトリをクローンする からGit �
 - Workers連携は不要
 - すべて静的配信で完結
 
-## その他のホスティングサービス
-
-### GitHub Pages
-
-```bash
-# gh-pages ブランチにデプロイ
-git checkout -b gh-pages
-git push origin gh-pages
-```
-
-リポジトリ設定 > Pages > Source から `gh-pages` ブランチを選択
-
-### Netlify
-
-1. [Netlify](https://www.netlify.com/) にログイン
-2. 「Add new site」>「Import an existing project」
-3. GitHubリポジトリを連携
-4. ビルド設定:
-   - Build command: (空欄)
-   - Publish directory: `.`
-
-### Vercel
-
-```bash
-# Vercel CLI でデプロイ
-npx vercel
-```
-
-## トラブルシューティング
-
-### 翻訳ファイルが読み込まれない
-
-CSP の `connect-src` に `'self'` が含まれているか確認してください。
-
-### フォントが読み込まれない
-
-Google Fonts へのアクセスが必要です。CSPで `fonts.googleapis.com` と `fonts.gstatic.com` を許可しています。
-
-### jsdiff が読み込まれない
-
-CDN (`cdn.jsdelivr.net`) へのアクセスが必要です。CSPで許可済みです。
-
 ---
 
-最終更新: 2026-01-22
+最終更新: 2026-01-23
