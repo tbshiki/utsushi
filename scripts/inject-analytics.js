@@ -14,9 +14,11 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const INDEX_PATH = path.join(__dirname, '..', 'index.html');
 const PLACEHOLDER = '<!-- __ANALYTICS_SCRIPTS__ -->';
+const NONCE_PLACEHOLDER = '__CSP_NONCE__';
 
 // 環境変数からIDを取得
 const GA_ID = process.env.GA_MEASUREMENT_ID || '';
@@ -25,12 +27,12 @@ const CLARITY_ID = process.env.CLARITY_PROJECT_ID || '';
 /**
  * Google Analytics スクリプトを生成
  */
-function generateGAScript(measurementId) {
+function generateGAScript(measurementId, nonce) {
   if (!measurementId) return '';
   return `
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=${measurementId}"></script>
-    <script>
+    <script nonce="${nonce}">
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
@@ -41,11 +43,11 @@ function generateGAScript(measurementId) {
 /**
  * Microsoft Clarity スクリプトを生成
  */
-function generateClarityScript(projectId) {
+function generateClarityScript(projectId, nonce) {
   if (!projectId) return '';
   return `
     <!-- Microsoft Clarity -->
-    <script>
+    <script nonce="${nonce}">
         (function(c,l,a,r,i,t,y){
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
@@ -58,28 +60,38 @@ function main() {
   console.log('📊 Analytics injection script started');
   console.log(`   GA_MEASUREMENT_ID: ${GA_ID ? '✓ Set' : '✗ Not set'}`);
   console.log(`   CLARITY_PROJECT_ID: ${CLARITY_ID ? '✓ Set' : '✗ Not set'}`);
+  const nonce = crypto.randomBytes(16).toString('base64');
+  console.log(`   CSP nonce: ${nonce}`);
 
   // index.html を読み込み
   let html = fs.readFileSync(INDEX_PATH, 'utf-8');
 
   // プレースホルダーが存在するか確認
-  if (!html.includes(PLACEHOLDER)) {
+  const hasPlaceholder = html.includes(PLACEHOLDER);
+  if (!hasPlaceholder) {
     console.log('⚠️  Placeholder not found. Analytics scripts may already be injected.');
-    return;
   }
 
-  // Analytics スクリプトを生成
-  const scripts = [
-    generateGAScript(GA_ID),
-    generateClarityScript(CLARITY_ID)
-  ].filter(Boolean).join('\n');
+  if (hasPlaceholder) {
+    // Analytics スクリプトを生成
+    const scripts = [
+      generateGAScript(GA_ID, nonce),
+      generateClarityScript(CLARITY_ID, nonce)
+    ].filter(Boolean).join('\n');
 
-  if (!scripts) {
-    console.log('ℹ️  No analytics IDs provided. Removing placeholder.');
-    html = html.replace(PLACEHOLDER, '');
+    if (!scripts) {
+      console.log('ℹ️  No analytics IDs provided. Removing placeholder.');
+      html = html.replace(PLACEHOLDER, '');
+    } else {
+      html = html.replace(PLACEHOLDER, scripts);
+      console.log('✅ Analytics scripts injected successfully!');
+    }
+  }
+
+  if (html.includes(NONCE_PLACEHOLDER)) {
+    html = html.split(NONCE_PLACEHOLDER).join(nonce);
   } else {
-    html = html.replace(PLACEHOLDER, scripts);
-    console.log('✅ Analytics scripts injected successfully!');
+    console.log('⚠️  CSP nonce placeholder not found. CSP may block inline scripts.');
   }
 
   // ファイルを書き出し
