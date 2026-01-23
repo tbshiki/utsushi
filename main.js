@@ -9,13 +9,13 @@
   /**
    * アプリケーション初期化
    */
-  function initApp() {
-    console.log('🔍 utsushi v0.1.0 - Text Diff Tool');
+  async function initApp() {
+    console.log('🔍 utsushi v0.2.0 - Text Diff Tool');
     console.log('🔒 完全ローカル処理 - サーバー通信なし');
 
-    // UI 初期化
+    // UI 初期化（非同期）
     if (typeof UI !== 'undefined') {
-      UI.init();
+      await UI.init();
       console.log('✓ UI initialized');
     } else {
       console.error('✗ UI module not found');

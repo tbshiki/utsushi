@@ -6,7 +6,7 @@
 
 ## 概要
 
-**utsushi（写し）** は、複数のテキストをブラウザ内で比較できるツールです。すべての処理はローカルで行われ、入力内容がサーバーに送信されることはありません。
+**utsushi** は、複数のテキストをブラウザ内で比較できるツールです。すべての処理はローカルで行われ、入力内容がサーバーに送信されることはありません。
 
 ## 特徴
 
@@ -73,7 +73,8 @@
 | 言語 | JavaScript (ES6+) |
 | 差分ライブラリ | [jsdiff](https://github.com/kpdecker/jsdiff) v5.1.0 |
 | フォント | Noto Sans JP, JetBrains Mono |
-| セキュリティ | CSP `connect-src 'none'` |
+| 多言語対応 | 日本語 / English |
+| セキュリティ | CSP (Content Security Policy) |
 
 ### ファイル構成
 
@@ -84,6 +85,14 @@ utsushi/
 ├── main.js         # エントリーポイント
 ├── diff-engine.js  # 差分計算エンジン
 ├── ui.js           # UI制御・テーマ・動的パネル管理
+├── i18n.js         # 多言語対応モジュール
+├── locales/        # 翻訳ファイル
+│   ├── ja.json     # 日本語
+│   └── en.json     # English
+├── scripts/        # ビルドスクリプト
+│   ├── build.js     # dist生成
+│   └── inject-analytics.js  # アナリティクス挿入
+├── dist/           # ビルド出力（配信対象）
 ├── README.md       # このファイル
 └── DEPLOY.md       # デプロイ手順
 ```
@@ -92,10 +101,11 @@ utsushi/
 
 | 項目 | 設定 |
 |------|------|
-| CSP | `connect-src 'none'`（外部通信禁止） |
-| Cookie | 使用しない |
-| LocalStorage | テーマ設定のみ保存 |
-| 外部送信 | 完全禁止 |
+| CSP | Content Security Policy 適用 |
+| SRI | CDNスクリプトに Subresource Integrity を適用 |
+| Cookie | アナリティクスのみ（オプション） |
+| LocalStorage | テーマ設定・言語設定を保存 |
+| テキストデータ | 外部送信なし（完全ローカル処理） |
 
 ## ローカル開発
 
@@ -113,6 +123,18 @@ npx http-server .
 
 ブラウザで http://localhost:3000 にアクセス
 
+## ビルド（配信用）
+
+不要ファイルを配信対象から除外するため、ビルドで `dist/` を作成します。
+
+```bash
+# dist/ を生成
+node scripts/build.js
+
+# dist/ を確認
+npx serve dist
+```
+
 ## デプロイ
 
 デプロイ手順は [DEPLOY.md](DEPLOY.md) を参照してください。
@@ -128,6 +150,15 @@ npx http-server .
 MIT License
 
 ## バージョン履歴
+
+### v0.2.2 (2026-01-23)
+- 配信用ビルド（dist出力）を追加
+- アナリティクス挿入をdistに適用
+
+### v0.2.1 (2026-01-23)
+- 入力パネルの4枚時は2x2レイアウト、スマホは1列に最適化
+- 手動のtabindex制御を廃止し、自然なフォーカス順に統一
+- CDN差分ライブラリにSRIを追加
 
 ### v0.2.0 (2026-01-22)
 - ダーク/ライトモード切り替え機能追加

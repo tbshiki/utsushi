@@ -1,33 +1,81 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'none';">
-    <meta name="description" content="utsushi - 完全ローカル処理のテキスト差分比較ツール。サーバーに送信せず、ブラウザ内で安全に比較。">
-    <meta property="og:title" content="utsushi - テキスト差分比較ツール">
-    <meta property="og:description" content="複数テキストをブラウザ内で比較。完全ローカル処理でプライバシー保護。">
+        content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.clarity.ms 'nonce-__CSP_NONCE__'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://www.googletagmanager.com https://www.clarity.ms https://c.bing.com; connect-src 'self' https://www.google-analytics.com https://www.clarity.ms https://c.bing.com;">
+
+    <!-- Analytics (injected at deploy time) -->
+    <!-- __ANALYTICS_SCRIPTS__ -->
+    <meta name="description" content="utsushi - A fully local text diff comparison tool. Compare safely in your browser without sending data to any server.">
+    <meta property="og:title" content="utsushi - Text Diff Tool">
+    <meta property="og:description" content="Compare multiple texts in your browser. Fully local processing for privacy protection.">
     <meta property="og:type" content="website">
-    <title>utsushi - テキスト差分比較ツール</title>
+    <title>utsushi - Text Diff Tool</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+
+    <!-- Favicon & PWA -->
+    <link rel="icon" href="logo.png" type="image/png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- SEO & OGP -->
+    <link rel="canonical" href="https://utsushi.pages.dev/">
+    <meta property="og:url" content="https://utsushi.pages.dev/">
+    <meta property="og:image" content="https://utsushi.pages.dev/logo.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:locale" content="en_US">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="utsushi - Text Diff Tool">
+    <meta name="twitter:description" content="Compare multiple texts in your browser. Fully local processing for privacy protection.">
+    <meta name="twitter:image" content="https://utsushi.pages.dev/logo.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json" nonce="__CSP_NONCE__">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "utsushi",
+        "description": "A fully local text diff comparison tool. Compare safely in your browser without sending data to any server.",
+        "url": "https://utsushi.pages.dev/",
+        "applicationCategory": "UtilityApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "featureList": [
+            "Text diff comparison",
+            "Fully local processing",
+            "Privacy protection",
+            "Multiple text support"
+        ]
+    }
+    </script>
 </head>
 
 <body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#text-i" class="skip-link" data-i18n="skip.link">Skip to main content</a>
+
     <header class="header">
         <div class="header-content">
             <h1 class="logo">
                 <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    style="background: var(--accent-primary); padding: 4px; color: white;">
-                    <path d="M16 2H8a2 2 0 0 0-2 2v1h9a2 2 0 0 1 2 2v13h1a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"
-                        style="opacity: 0.6"></path>
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path class="logo-path-muted" d="M16 2H8a2 2 0 0 0-2 2v1h9a2 2 0 0 1 2 2v13h1a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"></path>
                     <path d="M14 6H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z"></path>
                     <path d="M7 10h6"></path>
                     <path d="M7 14h6"></path>
@@ -35,101 +83,100 @@
                 </svg>
                 utsushi
             </h1>
-            <p class="tagline">テキスト差分比較ツール</p>
+            <p class="tagline" data-i18n="header.tagline">Text Diff Tool</p>
         </div>
-        <button id="btn-theme-toggle" class="btn-theme-toggle" title="モード切り替え">
-            <span class="theme-icon">☀️</span>
-        </button>
+        <div class="header-actions">
+            <button id="btn-lang-toggle" class="btn-lang-toggle" data-i18n="header.lang.title" data-i18n-attr="title" aria-label="Switch language" data-i18n-aria="header.lang.aria">
+                <span class="lang-icon" aria-hidden="true">JA</span>
+            </button>
+            <button id="btn-theme-toggle" class="btn-theme-toggle" data-i18n="header.theme.title" data-i18n-attr="title" aria-label="Toggle between dark and light mode" data-i18n-aria="header.theme.aria">
+                <span class="theme-icon" aria-hidden="true">☀️</span>
+            </button>
+        </div>
     </header>
 
-    <main class="main-container">
+    <main id="main-content" class="main-container">
         <!-- Input Section -->
-        <section class="input-section">
+        <section class="input-section" aria-label="Text input area" data-i18n="input.section.aria" data-i18n-attr="aria-label">
             <div id="input-panels" class="input-panels">
                 <!-- イ (Base) -->
                 <div class="input-panel" data-panel="i">
+                    <textarea id="text-i" class="text-input" placeholder="Enter text..." data-clarity-mask="true" data-i18n="input.placeholder.base" data-i18n-attr="placeholder"></textarea>
                     <div class="panel-header">
-                        <label class="panel-label">
-                            <span class="label-badge compare">比較</span>
-                            イ
+                        <label class="panel-label" for="text-i">
+                            <span class="label-badge compare" data-i18n="input.label.badge">Compare</span>
+                            <span data-i18n="panel.i">A</span>
                         </label>
-                        <button class="btn-clear" data-target="i" title="クリア">
-                            <span>×</span>
-                        </button>
                     </div>
-                    <textarea id="text-i" class="text-input" placeholder="テキストを入力..."></textarea>
                     <div class="panel-footer">
                         <div class="char-count" data-count="i">
-                            <span class="count-item"><span class="count-value">0</span> 文字</span>
+                            <span class="count-item"><span class="count-value">0</span> <span data-i18n="count.chars">chars</span></span>
                             <span class="count-separator">·</span>
-                            <span class="count-item"><span class="count-value">0</span> 単語</span>
+                            <span class="count-item"><span class="count-value">0</span> <span data-i18n="count.words">words</span></span>
                             <span class="count-separator">·</span>
-                            <span class="count-item"><span class="count-value">1</span> 行</span>
+                            <span class="count-item"><span class="count-value">1</span> <span data-i18n="count.lines">lines</span></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- ロ -->
                 <div class="input-panel" data-panel="ro">
+                    <textarea id="text-ro" class="text-input" placeholder="Enter text to compare..." data-clarity-mask="true" data-i18n="input.placeholder.compare" data-i18n-attr="placeholder"></textarea>
                     <div class="panel-header">
-                        <label class="panel-label">
-                            <span class="label-badge compare">比較</span>
-                            ロ
+                        <label class="panel-label" for="text-ro">
+                            <span class="label-badge compare" data-i18n="input.label.badge">Compare</span>
+                            <span data-i18n="panel.ro">B</span>
                         </label>
-                        <button class="btn-clear" data-target="ro" title="クリア">
-                            <span>×</span>
-                        </button>
                     </div>
-                    <textarea id="text-ro" class="text-input" placeholder="比較するテキストを入力..."></textarea>
                     <div class="panel-footer">
                         <div class="char-count" data-count="ro">
-                            <span class="count-item"><span class="count-value">0</span> 文字</span>
+                            <span class="count-item"><span class="count-value">0</span> <span data-i18n="count.chars">chars</span></span>
                             <span class="count-separator">·</span>
-                            <span class="count-item"><span class="count-value">0</span> 単語</span>
+                            <span class="count-item"><span class="count-value">0</span> <span data-i18n="count.words">words</span></span>
                             <span class="count-separator">·</span>
-                            <span class="count-item"><span class="count-value">1</span> 行</span>
+                            <span class="count-item"><span class="count-value">1</span> <span data-i18n="count.lines">lines</span></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Add Panel Button -->
                 <div id="add-panel-container" class="add-panel-container">
-                    <button id="btn-add-panel" class="btn-add-panel" title="テキストパネルを追加">
-                        <span class="add-icon">+</span>
-                        <span class="add-text">パネル追加</span>
+                    <button id="btn-add-panel" class="btn-add-panel" title="Add text panel" aria-label="Add a text panel for comparison" data-i18n="addPanel.title" data-i18n-attr="title">
+                        <span class="add-icon" aria-hidden="true">+</span>
+                        <span class="add-text" data-i18n="addPanel.text">Add Panel</span>
                     </button>
                 </div>
             </div>
 
             <div class="action-bar">
-                <button id="btn-compare" class="btn-primary">
-                    <span class="btn-icon">⇄</span>
-                    差分を比較
+                <button id="btn-compare" class="btn-primary" aria-label="Compare the differences in the entered texts" data-i18n="action.compare.aria" data-i18n-attr="aria-label">
+                    <span class="btn-icon" aria-hidden="true">⇄</span>
+                    <span data-i18n="action.compare">Compare</span>
                 </button>
-                <button id="btn-clear-all" class="btn-secondary">
-                    すべてクリア
+                <button id="btn-clear-all" class="btn-secondary" aria-label="Clear all inputs" data-i18n="action.clearAll.aria" data-i18n-attr="aria-label">
+                    <span data-i18n="action.clearAll">Clear All</span>
                 </button>
             </div>
         </section>
 
         <!-- Results Section -->
-        <section id="results-section" class="results-section hidden">
+        <section id="results-section" class="results-section hidden" aria-label="Comparison results" aria-live="polite" data-i18n="results.section.aria" data-i18n-attr="aria-label">
             <div class="results-header">
-                <h2 class="results-title">比較結果</h2>
-                <div class="legend">
-                    <span class="legend-item added">
-                        <span class="legend-color"></span>追加
+                <h2 class="results-title" data-i18n="results.title">Results</h2>
+                <div class="legend" role="list" aria-label="Diff legend" data-i18n="results.legend.aria" data-i18n-attr="aria-label">
+                    <span class="legend-item added" role="listitem">
+                        <span class="legend-color" aria-hidden="true"></span><span data-i18n="results.legend.added">Added</span>
                     </span>
-                    <span class="legend-item removed">
-                        <span class="legend-color"></span>削除
+                    <span class="legend-item removed" role="listitem">
+                        <span class="legend-color" aria-hidden="true"></span><span data-i18n="results.legend.removed">Removed</span>
                     </span>
-                    <span class="legend-item changed">
-                        <span class="legend-color"></span>変更
+                    <span class="legend-item changed" role="listitem">
+                        <span class="legend-color" aria-hidden="true"></span><span data-i18n="results.legend.changed">Changed</span>
                     </span>
                 </div>
             </div>
 
-            <div id="diff-container" class="diff-container">
+            <div id="diff-container" class="diff-container" role="region" aria-label="Diff display area" data-i18n="results.diff.aria" data-i18n-attr="aria-label">
                 <!-- Diff results will be dynamically generated -->
             </div>
         </section>
@@ -139,27 +186,114 @@
         <div class="footer-content">
             <div class="footer-main">
                 <div class="footer-info">
-                    <span>utsushi v0.1.0</span>
+                    <span>utsushi v0.2.2</span>
+                    <span class="footer-separator">|</span>
+                    <button id="btn-privacy-policy" class="btn-footer-link" type="button" data-i18n="footer.privacy.policy">
+                        Privacy Policy
+                    </button>
                 </div>
-                <button id="btn-privacy-toggle" class="btn-privacy-toggle active">
-                    🔒 プライバシー
-                    <span class="toggle-icon">▼</span>
+                <button id="btn-privacy-toggle" class="btn-privacy-toggle active" aria-expanded="true"
+                    aria-controls="privacy-details">
+                    🔒 <span data-i18n="footer.privacy.toggle">Privacy</span>
+                    <span class="toggle-icon" aria-hidden="true">▼</span>
                 </button>
             </div>
             <div id="privacy-details" class="privacy-details">
                 <ul>
-                    <li>✅ 本ツールはすべてローカル処理です</li>
-                    <li>✅ 入力内容はサーバーに送信されません</li>
-                    <li>⚠️ 入力データの責任は利用者にあります</li>
+                    <li>✅ <span data-i18n="footer.privacy.local">This tool processes everything locally</span></li>
+                    <li>✅ <span data-i18n="footer.privacy.noSend">Input content is not sent to any server</span></li>
+                    <li>⚠️ <span data-i18n="footer.privacy.analytics">Analytics are used (</span><button id="btn-privacy-policy-inline" class="btn-inline-link" type="button" data-i18n="footer.privacy.details">details</button>)</li>
                 </ul>
             </div>
         </div>
     </footer>
 
+    <!-- Privacy Policy Modal -->
+    <div id="privacy-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title" class="modal-title" data-i18n="privacy.title">Privacy Policy</h2>
+                <button id="btn-modal-close" class="btn-modal-close" type="button" aria-label="Close" data-i18n="modal.close.aria" data-i18n-attr="aria-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="policy-section">
+                    <h3 data-i18n="privacy.section1.title">1. Introduction</h3>
+                    <p data-i18n="privacy.section1.content">utsushi (hereinafter "this tool") is a tool for comparing text differences in your browser. This privacy policy explains how information is handled in this tool.</p>
+                </section>
+
+                <section class="policy-section">
+                    <h3 data-i18n="privacy.section2.title">2. Handling of Text Data</h3>
+                    <p>
+                        <span data-i18n="privacy.section2.intro.prefix">Text data entered into this tool is </span>
+                        <strong data-i18n="privacy.section2.intro.emphasis">processed entirely locally within your browser</strong><span data-i18n="privacy.section2.intro.suffix">.</span>
+                    </p>
+                    <ul>
+                        <li>✅ <span data-i18n="privacy.section2.item1">Input content is not sent to any server</span></li>
+                        <li>✅ <span data-i18n="privacy.section2.item2">Input content is not saved or recorded</span></li>
+                        <li>✅ <span data-i18n="privacy.section2.item3">Input data is deleted when you close the page</span></li>
+                    </ul>
+                </section>
+
+                <section class="policy-section">
+                    <h3 data-i18n="privacy.section3.title">3. About Analytics</h3>
+                    <p data-i18n="privacy.section3.intro">This tool may use the following analytics tools for service improvement.</p>
+                    <ul>
+                        <li><strong data-i18n="privacy.section3.ga.label">Google Analytics</strong>: <span data-i18n="privacy.section3.ga.body">Collects statistical information such as visitor count, page views, and device usage</span></li>
+                        <li><strong data-i18n="privacy.section3.clarity.label">Microsoft Clarity</strong>: <span data-i18n="privacy.section3.clarity.body">Collects anonymized user interaction patterns (clicks, scrolls, etc.)</span></li>
+                    </ul>
+                    <p>
+                        <span data-i18n="privacy.section3.note.prefix">These tools may use cookies, but </span>
+                        <strong data-i18n="privacy.section3.note.emphasis">the content of your text input is never collected</strong><span data-i18n="privacy.section3.note.suffix">.</span>
+                    </p>
+
+                    <div class="policy-notice">
+                        <p><strong data-i18n="privacy.section3.notice.title">⚠️ About Microsoft Clarity Session Recording</strong></p>
+                        <p data-i18n="privacy.section3.notice.content1">Microsoft Clarity has a feature that records user interactions. While we have configured input areas to be masked, we cannot guarantee complete exclusion due to technical limitations.</p>
+                        <p data-i18n="privacy.section3.notice.content2">If you handle sensitive text, consider blocking third-party cookies in your browser settings or enabling Do Not Track (DNT).</p>
+                    </div>
+                </section>
+
+                <section class="policy-section">
+                    <h3 data-i18n="privacy.section4.title">4. About Cookies</h3>
+                    <p data-i18n="privacy.section4.intro">This tool uses cookies or local storage for the following purposes.</p>
+                    <ul>
+                        <li data-i18n="privacy.section4.item1">Saving theme settings (dark/light mode)</li>
+                        <li data-i18n="privacy.section4.item2">Saving language settings</li>
+                        <li data-i18n="privacy.section4.item3">Analytics (see above)</li>
+                    </ul>
+                </section>
+
+                <section class="policy-section">
+                    <h3 data-i18n="privacy.section5.title">5. Third-Party Disclosure</h3>
+                    <p data-i18n="privacy.section5.content">Since this tool does not collect input data, no disclosure to third parties is made. Statistical information collected through analytics is handled according to each analytics service's privacy policy.</p>
+                </section>
+
+                <section class="policy-section">
+                    <h3 data-i18n="privacy.section6.title">6. Contact</h3>
+                    <p data-i18n="privacy.section6.content">For inquiries about this privacy policy, please use the Issues section of the GitHub repository.</p>
+                </section>
+
+                <section class="policy-section">
+                    <h3 data-i18n="privacy.section7.title">7. Amendments</h3>
+                    <p data-i18n="privacy.section7.content">This privacy policy may be amended as necessary. Significant changes will be announced on this tool.</p>
+                    <p class="policy-date" data-i18n="privacy.lastUpdated">Last updated: January 22, 2026</p>
+                </section>
+            </div>
+        </div>
+    </div>
+
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/diff@5.1.0/dist/diff.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/diff@5.1.0/dist/diff.min.js"
+        integrity="sha384-kfJm1UHujU89hXr0VHT0u0t4lqavqaoomP6wix8D9fhzTeFvC9DYyaT36//Qd144" crossorigin="anonymous"></script>
+    <script src="i18n.js"></script>
     <script src="diff-engine.js"></script>
     <script src="ui.js"></script>
     <script src="main.js"></script>
