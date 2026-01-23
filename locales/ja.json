@@ -42,6 +42,7 @@
   "diff.vs": "vs",
   "diff.empty": "テキストがありません",
   "footer.privacy.policy": "プライバシーポリシー",
+  "footer.repo.link": "GitHub リポジトリ",
   "footer.privacy.toggle": "プライバシー",
   "footer.privacy.local": "本ツールはすべてローカル処理です",
   "footer.privacy.noSend": "入力内容はサーバーに送信されません",
