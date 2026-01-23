@@ -18,7 +18,8 @@ const FILES_TO_COPY = [
   'diff-engine.js',
   'i18n.js',
   'manifest.json',
-  'logo.png'
+  'logo.png',
+  '_headers'
 ];
 
 const DIRS_TO_COPY = [
