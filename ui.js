@@ -29,7 +29,6 @@ const UI = (function () {
     setupTheme();
     setupEventListeners();
     updatePanelLayout();
-    updateTabOrder();
 
     // i18n 初期化（非同期）
     if (typeof I18n !== 'undefined') {
@@ -197,7 +196,6 @@ const UI = (function () {
     updatePanelLayout();
     updateAddButton();
     updatePanelNames();
-    updateTabOrder();
 
     // 新しいパネルの入力エリアにフォーカス
     const newTextarea = document.getElementById(`text-${nextPanel.id}`);
@@ -215,7 +213,6 @@ const UI = (function () {
       panel.remove();
       updatePanelLayout();
       updateAddButton();
-      updateTabOrder();
     }
   }
 
@@ -303,54 +300,6 @@ const UI = (function () {
     } else {
       elements.addPanelContainer.style.display = 'flex';
     }
-  }
-
-  /**
-   * フォーカス移動順を最適化
-   * 入力欄 -> パネル追加 -> クリア/削除 の順にする
-   */
-  function updateTabOrder() {
-    let tabIndex = 1;
-
-    if (elements.skipLink) {
-      elements.skipLink.setAttribute('tabindex', tabIndex++);
-    }
-    if (elements.btnLangToggle) {
-      elements.btnLangToggle.setAttribute('tabindex', tabIndex++);
-    }
-    if (elements.btnThemeToggle) {
-      elements.btnThemeToggle.setAttribute('tabindex', tabIndex++);
-    }
-
-    PANELS.forEach(panel => {
-      const textarea = document.getElementById(`text-${panel.id}`);
-      if (textarea) {
-        textarea.setAttribute('tabindex', tabIndex++);
-      }
-    });
-
-    if (elements.btnAddPanel && elements.addPanelContainer?.style.display !== 'none') {
-      elements.btnAddPanel.setAttribute('tabindex', tabIndex++);
-    } else if (elements.btnAddPanel) {
-      elements.btnAddPanel.setAttribute('tabindex', '-1');
-    }
-
-    if (elements.btnCompare) {
-      elements.btnCompare.setAttribute('tabindex', tabIndex++);
-    }
-    if (elements.btnClearAll) {
-      elements.btnClearAll.setAttribute('tabindex', tabIndex++);
-    }
-
-    PANELS.forEach(panel => {
-      const panelEl = document.querySelector(`[data-panel="${panel.id}"]`);
-      if (!panelEl) return;
-
-      const removeBtn = panelEl.querySelector('.btn-remove-panel');
-      if (removeBtn) {
-        removeBtn.setAttribute('tabindex', tabIndex++);
-      }
-    });
   }
 
   /**
