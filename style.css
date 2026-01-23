@@ -167,11 +167,11 @@ body {
 .logo-icon {
     width: 28px;
     height: 28px;
-    border-radius: var(--radius-sm);
     object-fit: contain;
-    background: var(--accent-primary);
-    padding: 4px;
-    color: white;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    padding: 0;
+    display: block;
 }
 
 .logo-path-muted {
