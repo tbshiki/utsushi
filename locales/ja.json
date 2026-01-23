@@ -81,7 +81,7 @@
   "privacy.section5.title": "5. 第三者への提供",
   "privacy.section5.content": "本ツールは入力データを収集しないため、第三者への提供は行いません。アクセス解析で収集される統計情報は、各解析サービスのプライバシーポリシーに従って取り扱われます。",
   "privacy.section6.title": "6. お問い合わせ",
-  "privacy.section6.content": "本プライバシーポリシーに関するお問い合わせは、GitHubリポジトリのIssueよりお願いします。",
+  "privacy.section6.content": "本プライバシーポリシーに関するお問い合わせは、<a href=\"https://github.com/tbshiki/utsushi/issues\" target=\"_blank\" rel=\"noopener noreferrer\">GitHub Issues</a>よりお願いします。",
   "privacy.section7.title": "7. 改定",
   "privacy.section7.content": "本プライバシーポリシーは、必要に応じて改定することがあります。重要な変更がある場合は、本ツール上でお知らせします。",
   "privacy.lastUpdated": "最終更新日: 2026年1月22日",

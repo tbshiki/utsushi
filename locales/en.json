@@ -81,7 +81,7 @@
   "privacy.section5.title": "5. Third-Party Disclosure",
   "privacy.section5.content": "Since this tool does not collect input data, no disclosure to third parties is made. Statistical information collected through analytics is handled according to each analytics service's privacy policy.",
   "privacy.section6.title": "6. Contact",
-  "privacy.section6.content": "For inquiries about this privacy policy, please use the Issues section of the GitHub repository.",
+  "privacy.section6.content": "For inquiries about this privacy policy, please use <a href=\"https://github.com/tbshiki/utsushi/issues\" target=\"_blank\" rel=\"noopener noreferrer\">GitHub Issues</a>.",
   "privacy.section7.title": "7. Amendments",
   "privacy.section7.content": "This privacy policy may be amended as necessary. Significant changes will be announced on this tool.",
   "privacy.lastUpdated": "Last updated: January 22, 2026",
