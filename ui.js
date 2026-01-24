@@ -633,7 +633,7 @@ const UI = (function () {
       const right = result.right[index];
       const leftLineNum = (left && left.lineNum !== null) ? left.lineNum : null;
       const rightLineNum = (right && right.lineNum !== null) ? right.lineNum : null;
-      const lineNum = leftLineNum ?? rightLineNum;
+      const lineLabel = formatLineLabel(leftLineNum, rightLineNum);
       const type = getMapLineType(left, right);
 
       const button = document.createElement('button');
@@ -651,11 +651,11 @@ const UI = (function () {
         ? I18n.t(`diff.type.${type}`)
         : type;
       const label = typeof I18n !== 'undefined'
-        ? I18n.t('diff.map.item', { line: lineNum ?? '-', type: typeLabel })
-        : `Line ${lineNum ?? '-'}: ${typeLabel}`;
+        ? I18n.t('diff.map.item', { line: lineLabel, type: typeLabel })
+        : `Line ${lineLabel}: ${typeLabel}`;
       button.setAttribute('aria-label', label);
 
-      button.textContent = lineNum !== null ? String(lineNum) : '•';
+      button.textContent = lineLabel;
       map.appendChild(button);
     });
 
@@ -668,6 +668,18 @@ const UI = (function () {
     if (left && left.type === 'changed') return 'changed';
     if (right && right.type === 'changed') return 'changed';
     return 'changed';
+  }
+
+  function formatLineLabel(leftLineNum, rightLineNum) {
+    if (leftLineNum !== null && rightLineNum !== null) {
+      if (leftLineNum === rightLineNum) {
+        return String(leftLineNum);
+      }
+      return `${leftLineNum}/${rightLineNum}`;
+    }
+    if (leftLineNum !== null) return String(leftLineNum);
+    if (rightLineNum !== null) return String(rightLineNum);
+    return '•';
   }
 
   /**
