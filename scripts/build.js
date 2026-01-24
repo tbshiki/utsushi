@@ -1,6 +1,6 @@
 /**
  * Build script for Cloudflare Pages.
- * Copies only required assets into dist/ and injects analytics.
+ * Copies only required assets into dist/ and replaces CSP nonce.
  */
 
 const fs = require('fs');
@@ -50,10 +50,10 @@ function copyDir(srcDir, destDir) {
   }
 }
 
-function runAnalyticsInjection() {
+function runCspNonceReplacement() {
   const result = spawnSync(
     process.execPath,
-    [path.join(__dirname, 'inject-analytics.js')],
+    [path.join(__dirname, 'replace-csp-nonce.js')],
     {
       stdio: 'inherit',
       env: { ...process.env, OUTPUT_DIR: DIST_DIR }
@@ -81,7 +81,7 @@ function main() {
     copyDir(src, dest);
   }
 
-  runAnalyticsInjection();
+  runCspNonceReplacement();
   console.log('✅ Build completed');
 }
 
