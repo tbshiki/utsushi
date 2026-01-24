@@ -70,8 +70,10 @@
     <header class="header">
         <div class="header-content">
             <h1 class="logo">
-                <img class="logo-icon" src="logo.png" alt="" aria-hidden="true">
-                utsushi
+                <a class="logo-link" href="./">
+                    <img class="logo-icon" src="logo.png" alt="" aria-hidden="true">
+                    <span class="logo-text">utsushi</span>
+                </a>
             </h1>
             <p class="tagline" data-i18n="header.tagline">Text Diff Tool</p>
         </div>
@@ -131,7 +133,7 @@
 
                 <!-- Add Panel Button -->
                 <div id="add-panel-container" class="add-panel-container">
-                    <button id="btn-add-panel" class="btn-add-panel" title="Add text panel" aria-label="Add a text panel for comparison" data-i18n="addPanel.title" data-i18n-attr="title">
+                    <button id="btn-add-panel" class="btn-add-panel" title="Add text panel" aria-label="Add a text panel for comparison" data-i18n="addPanel.title" data-i18n-attr="title" data-i18n-aria="addPanel.aria">
                         <span class="add-icon" aria-hidden="true">+</span>
                         <span class="add-text" data-i18n="addPanel.text">Add Panel</span>
                     </button>
