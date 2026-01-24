@@ -870,8 +870,7 @@ a:focus-visible {
     color: var(--text-muted);
 }
 
-.diff-pair.changes-only .diff-line[data-line-type="unchanged"],
-.diff-pair.changes-only .diff-line[data-line-type="empty"] {
+.diff-pair.changes-only .diff-line[data-show="false"] {
     display: none;
 }
 
