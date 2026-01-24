@@ -490,6 +490,8 @@ const UI = (function () {
     const panels = document.createElement('div');
     panels.className = 'diff-panels';
 
+    const visibilityMap = buildVisibilityMap(result);
+
     const leftPanel = document.createElement('div');
     leftPanel.className = 'diff-panel';
     leftPanel.dataset.side = 'left';
@@ -499,7 +501,7 @@ const UI = (function () {
     const leftContent = document.createElement('div');
     leftContent.className = 'diff-content';
     leftContent.id = `diff-${pairId}-left`;
-    leftContent.appendChild(renderLinesFragment(result.left));
+    leftContent.appendChild(renderLinesFragment(result.left, visibilityMap));
     leftPanel.appendChild(leftHeader);
     leftPanel.appendChild(leftContent);
 
@@ -512,7 +514,7 @@ const UI = (function () {
     const rightContent = document.createElement('div');
     rightContent.className = 'diff-content';
     rightContent.id = `diff-${pairId}-right`;
-    rightContent.appendChild(renderLinesFragment(result.right));
+    rightContent.appendChild(renderLinesFragment(result.right, visibilityMap));
     rightPanel.appendChild(rightHeader);
     rightPanel.appendChild(rightContent);
 
@@ -553,7 +555,7 @@ const UI = (function () {
   /**
    * 行をHTML化
    */
-  function renderLinesFragment(lines) {
+  function renderLinesFragment(lines, visibilityMap = []) {
     const fragment = document.createDocumentFragment();
     if (lines.length === 0) {
       const emptyText = typeof I18n !== 'undefined' ? I18n.t('diff.empty') : 'No text';
@@ -567,11 +569,13 @@ const UI = (function () {
     lines.forEach((line, index) => {
       const typeClass = getLineClass(line.type);
       const lineNumDisplay = line.lineNum !== null ? String(line.lineNum) : '';
+      const isVisible = visibilityMap.length > 0 ? visibilityMap[index] : true;
 
       const lineEl = document.createElement('div');
       lineEl.className = `diff-line ${typeClass}`.trim();
       lineEl.dataset.lineIndex = String(index);
       lineEl.dataset.lineType = line.type;
+      lineEl.dataset.show = isVisible ? 'true' : 'false';
       if (line.lineNum !== null) {
         lineEl.dataset.lineNum = String(line.lineNum);
       }
@@ -594,6 +598,22 @@ const UI = (function () {
     });
 
     return fragment;
+  }
+
+  function buildVisibilityMap(result) {
+    const totalLines = Math.max(result.left.length, result.right.length);
+    const visibilityMap = new Array(totalLines);
+    for (let i = 0; i < totalLines; i++) {
+      const left = result.left[i];
+      const right = result.right[i];
+      const leftType = left ? left.type : 'empty';
+      const rightType = right ? right.type : 'empty';
+
+      const bothUnchanged = leftType === 'unchanged' && rightType === 'unchanged';
+      const bothEmpty = leftType === 'empty' && rightType === 'empty';
+      visibilityMap[i] = !(bothUnchanged || bothEmpty);
+    }
+    return visibilityMap;
   }
 
   /**

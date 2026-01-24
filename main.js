@@ -10,7 +10,7 @@
    * アプリケーション初期化
    */
   async function initApp() {
-    console.log('🔍 utsushi v0.2.4 - Text Diff Tool');
+    console.log('🔍 utsushi v0.2.5 - Text Diff Tool');
     console.log('🔒 完全ローカル処理 - サーバー通信なし');
 
     // UI 初期化（非同期）
