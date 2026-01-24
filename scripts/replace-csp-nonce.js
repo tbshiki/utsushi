@@ -37,19 +37,20 @@ function resolveHeadersPath() {
 
 function replaceNonceInFile(filePath, nonce, label) {
   if (!fs.existsSync(filePath)) {
-    console.log(`ℹ️  ${label} not found. Skipping.`);
-    return;
+    console.error(`✗ ${label} not found.`);
+    return false;
   }
 
   let content = fs.readFileSync(filePath, 'utf-8');
   if (!content.includes(NONCE_PLACEHOLDER)) {
-    console.log(`⚠️  CSP nonce placeholder not found in ${label}.`);
-    return;
+    console.error(`✗ CSP nonce placeholder not found in ${label}.`);
+    return false;
   }
 
   content = content.split(NONCE_PLACEHOLDER).join(nonce);
   fs.writeFileSync(filePath, content, 'utf-8');
   console.log(`📝 ${label} updated.`);
+  return true;
 }
 
 function main() {
@@ -62,8 +63,12 @@ function main() {
   console.log(`   Target index.html: ${indexPath}`);
   console.log(`   Target _headers: ${headersPath}`);
 
-  replaceNonceInFile(indexPath, nonce, 'index.html');
-  replaceNonceInFile(headersPath, nonce, '_headers');
+  const indexOk = replaceNonceInFile(indexPath, nonce, 'index.html');
+  const headersOk = replaceNonceInFile(headersPath, nonce, '_headers');
+  if (!indexOk || !headersOk) {
+    console.error('✗ CSP nonce replacement failed.');
+    process.exit(1);
+  }
 }
 
 main();
