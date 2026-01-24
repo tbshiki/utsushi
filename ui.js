@@ -42,6 +42,7 @@ const UI = (function () {
     setupTheme();
     setupEventListeners();
     updatePanelLayout();
+    initializeLineNumbers();
 
     // i18n 初期化（非同期）
     if (typeof I18n !== 'undefined') {
@@ -143,8 +144,15 @@ const UI = (function () {
       if (e.target.classList.contains('text-input')) {
         const panelId = e.target.id.replace('text-', '');
         updateCharCount(panelId, e.target.value);
+        updateLineNumbers(e.target);
       }
     });
+
+    elements.inputPanels.addEventListener('scroll', (e) => {
+      if (e.target.classList.contains('text-input')) {
+        syncLineNumbersScroll(e.target);
+      }
+    }, true);
 
     // キーボードショートカット
     document.addEventListener('keydown', (e) => {
@@ -219,6 +227,7 @@ const UI = (function () {
     // 新しいパネルの入力エリアにフォーカス
     const newTextarea = document.getElementById(`text-${nextPanel.id}`);
     if (newTextarea) {
+      setupLineNumbersForTextarea(newTextarea);
       newTextarea.focus();
     }
   }
@@ -260,7 +269,22 @@ const UI = (function () {
     textarea.dataset.clarityMask = 'true';
     textarea.dataset.i18n = 'input.placeholder.compare';
     textarea.dataset.i18nAttr = 'placeholder';
-    panelEl.appendChild(textarea);
+
+    const textareaWrapper = document.createElement('div');
+    textareaWrapper.className = 'textarea-wrapper';
+
+    const lineNumbers = document.createElement('div');
+    lineNumbers.className = 'line-numbers';
+    lineNumbers.setAttribute('aria-hidden', 'true');
+
+    const lineNumbersContent = document.createElement('div');
+    lineNumbersContent.className = 'line-numbers-content';
+    lineNumbersContent.textContent = '1';
+    lineNumbers.appendChild(lineNumbersContent);
+
+    textareaWrapper.appendChild(lineNumbers);
+    textareaWrapper.appendChild(textarea);
+    panelEl.appendChild(textareaWrapper);
 
     const header = document.createElement('div');
     header.className = 'panel-header';
@@ -358,6 +382,55 @@ const UI = (function () {
     } else {
       elements.addPanelContainer.style.display = 'flex';
     }
+  }
+
+  /**
+   * 行番号の初期化
+   */
+  function initializeLineNumbers() {
+    const textareas = document.querySelectorAll('.text-input');
+    textareas.forEach((textarea) => {
+      setupLineNumbersForTextarea(textarea);
+    });
+  }
+
+  function setupLineNumbersForTextarea(textarea) {
+    if (!textarea) return;
+    updateLineNumbers(textarea);
+    syncLineNumbersScroll(textarea);
+  }
+
+  function updateLineNumbers(textarea) {
+    const wrapper = textarea.closest('.textarea-wrapper');
+    if (!wrapper) return;
+    const lineNumbers = wrapper.querySelector('.line-numbers-content');
+    if (!lineNumbers) return;
+
+    const lineCount = getLineCount(textarea.value);
+    lineNumbers.textContent = buildLineNumberText(lineCount);
+    syncLineNumbersScroll(textarea);
+  }
+
+  function syncLineNumbersScroll(textarea) {
+    const wrapper = textarea.closest('.textarea-wrapper');
+    if (!wrapper) return;
+    const lineNumbers = wrapper.querySelector('.line-numbers-content');
+    if (!lineNumbers) return;
+    lineNumbers.style.transform = `translateY(${-textarea.scrollTop}px)`;
+  }
+
+  function buildLineNumberText(totalLines) {
+    const lines = Math.max(1, totalLines);
+    const numbers = new Array(lines);
+    for (let i = 0; i < lines; i += 1) {
+      numbers[i] = String(i + 1);
+    }
+    return numbers.join('\n');
+  }
+
+  function getLineCount(text) {
+    if (!text) return 1;
+    return text.split('\n').length || 1;
   }
 
   /**
@@ -907,6 +980,7 @@ const UI = (function () {
     if (textarea) {
       textarea.value = '';
       updateCharCount(panelId, '');
+      updateLineNumbers(textarea);
     }
   }
 

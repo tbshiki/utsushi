@@ -93,7 +93,12 @@
             <div id="input-panels" class="input-panels">
                 <!-- イ (Base) -->
                 <div class="input-panel" data-panel="i">
-                    <textarea id="text-i" class="text-input" placeholder="Enter text..." data-clarity-mask="true" data-i18n="input.placeholder.base" data-i18n-attr="placeholder"></textarea>
+                    <div class="textarea-wrapper">
+                        <div class="line-numbers" aria-hidden="true">
+                            <div class="line-numbers-content">1</div>
+                        </div>
+                        <textarea id="text-i" class="text-input" placeholder="Enter text..." data-clarity-mask="true" data-i18n="input.placeholder.base" data-i18n-attr="placeholder"></textarea>
+                    </div>
                     <div class="panel-header">
                         <label class="panel-label" for="text-i">
                             <span class="label-badge compare" data-i18n="input.label.badge">Compare</span>
@@ -113,7 +118,12 @@
 
                 <!-- ロ -->
                 <div class="input-panel" data-panel="ro">
-                    <textarea id="text-ro" class="text-input" placeholder="Enter text to compare..." data-clarity-mask="true" data-i18n="input.placeholder.compare" data-i18n-attr="placeholder"></textarea>
+                    <div class="textarea-wrapper">
+                        <div class="line-numbers" aria-hidden="true">
+                            <div class="line-numbers-content">1</div>
+                        </div>
+                        <textarea id="text-ro" class="text-input" placeholder="Enter text to compare..." data-clarity-mask="true" data-i18n="input.placeholder.compare" data-i18n-attr="placeholder"></textarea>
+                    </div>
                     <div class="panel-header">
                         <label class="panel-label" for="text-ro">
                             <span class="label-badge compare" data-i18n="input.label.badge">Compare</span>
