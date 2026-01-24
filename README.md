@@ -91,7 +91,7 @@ utsushi/
 │   └── en.json     # English
 ├── scripts/        # ビルドスクリプト
 │   ├── build.js     # dist生成
-│   └── inject-analytics.js  # アナリティクス挿入
+│   └── replace-csp-nonce.js  # CSP nonce 置換
 ├── dist/           # ビルド出力（配信対象）
 ├── README.md       # このファイル
 └── DEPLOY.md       # デプロイ手順

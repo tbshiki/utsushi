@@ -52,30 +52,24 @@
 3. 使用したいドメインを入力
 4. DNS設定を行う
 
-### 環境変数
+### アナリティクス（Zaraz）
 
-アナリティクス機能を有効にするには、以下の環境変数を設定してください：
-
-| 変数名 | 説明 | 例 |
-|--------|------|-----|
-| `GA_MEASUREMENT_ID` | Google Analytics 測定ID | `G-XXXXXXXXXX` |
-| `CLARITY_PROJECT_ID` | Microsoft Clarity プロジェクトID | `abcdefghij` |
+GA4 と Microsoft Clarity は Cloudflare Zaraz で管理します。
+ビルド時の環境変数は不要です。
 
 **Cloudflare Pages での設定方法：**
 1. Cloudflare Dashboard > Pages > utsushi プロジェクト
-2. 「設定」タブ > 「環境変数」
-3. 「変数を追加」で上記の変数を設定
-4. 「本番環境」にのみ設定することを推奨
+2. 「設定」タブ > 「Zaraz」
+3. Google Analytics 4 / Microsoft Clarity を追加して ID を設定
 
 **ビルドコマンドの設定：**
-環境変数を設定した場合も、ビルドコマンドは同じです（distに反映されます）：
+ビルドコマンドは同じです：
 
 | 項目 | 設定値 |
 |------|--------|
 | ビルドコマンド | `node scripts/build.js` |
 | ビルド出力ディレクトリ | `dist` |
 
-> **注意**: 環境変数が設定されていない場合、アナリティクス機能は無効になります（プレースホルダーは削除されます）。
 > **注意**: CSPは `_headers` に移行しています。nonceはビルド時に自動注入されます。
 > **注意**: ローカル開発時はCSPヘッダーが付与されないため、本番と挙動が異なる場合があります。
 

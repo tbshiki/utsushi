@@ -343,6 +343,33 @@ body {
     color: var(--text-primary);
 }
 
+.textarea-wrapper {
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+}
+
+.line-numbers {
+    flex: 0 0 auto;
+    min-width: 3ch;
+    padding: var(--space-md) var(--space-sm);
+    background: var(--bg-tertiary);
+    border-right: 1px solid var(--border-primary);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    text-align: right;
+    user-select: none;
+    overflow: hidden;
+}
+
+.line-numbers-content {
+    white-space: pre;
+    transform: translateY(0);
+    will-change: transform;
+}
+
 .text-input {
     flex: 1;
     min-height: 200px;
@@ -1291,6 +1318,10 @@ a:focus-visible {
     }
 
     .text-input {
+        font-size: 16px;
+    }
+
+    .line-numbers {
         font-size: 16px;
     }
 }
