@@ -19,8 +19,7 @@ const FILES_TO_COPY = [
   'i18n.js',
   'manifest.json',
   'logo.png',
-  '_headers',
-  '_redirects'
+  '_headers'
 ];
 
 const DIRS_TO_COPY = [
