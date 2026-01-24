@@ -718,13 +718,20 @@ const UI = (function () {
     const offset = 12;
 
     if (leftPanel && leftLine) {
-      leftPanel.scrollTop = Math.max(leftLine.offsetTop - offset, 0);
+      scrollPanelToLine(leftPanel, leftLine, offset);
       highlightDiffLine(leftLine);
     }
     if (rightPanel && rightLine) {
-      rightPanel.scrollTop = Math.max(rightLine.offsetTop - offset, 0);
+      scrollPanelToLine(rightPanel, rightLine, offset);
       highlightDiffLine(rightLine);
     }
+  }
+
+  function scrollPanelToLine(panel, lineEl, offset) {
+    const panelRect = panel.getBoundingClientRect();
+    const lineRect = lineEl.getBoundingClientRect();
+    const delta = lineRect.top - panelRect.top;
+    panel.scrollTop = Math.max(panel.scrollTop + delta - offset, 0);
   }
 
   function highlightDiffLine(lineEl) {
