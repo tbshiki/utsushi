@@ -631,13 +631,21 @@ const UI = (function () {
     changeIndexes.forEach(index => {
       const left = result.left[index];
       const right = result.right[index];
-      const lineNum = (left && left.lineNum !== null) ? left.lineNum : (right ? right.lineNum : null);
+      const leftLineNum = (left && left.lineNum !== null) ? left.lineNum : null;
+      const rightLineNum = (right && right.lineNum !== null) ? right.lineNum : null;
+      const lineNum = leftLineNum ?? rightLineNum;
       const type = getMapLineType(left, right);
 
       const button = document.createElement('button');
       button.type = 'button';
       button.className = `diff-map-item ${type}`;
       button.dataset.lineIndex = String(index);
+      if (leftLineNum !== null) {
+        button.dataset.leftLineNum = String(leftLineNum);
+      }
+      if (rightLineNum !== null) {
+        button.dataset.rightLineNum = String(rightLineNum);
+      }
 
       const typeLabel = typeof I18n !== 'undefined'
         ? I18n.t(`diff.type.${type}`)
@@ -680,15 +688,21 @@ const UI = (function () {
       const pair = mapItem.closest('.diff-pair');
       if (!pair) return;
       const index = Number(mapItem.dataset.lineIndex);
-      scrollToDiffLine(pair, index);
+      const leftLineNum = mapItem.dataset.leftLineNum || null;
+      const rightLineNum = mapItem.dataset.rightLineNum || null;
+      scrollToDiffLine(pair, index, leftLineNum, rightLineNum);
     }
   }
 
-  function scrollToDiffLine(pair, index) {
+  function scrollToDiffLine(pair, index, leftLineNum = null, rightLineNum = null) {
     const leftPanel = pair.querySelector('.diff-panel[data-side="left"] .diff-content');
     const rightPanel = pair.querySelector('.diff-panel[data-side="right"] .diff-content');
-    const leftLine = leftPanel?.querySelector(`.diff-line[data-line-index="${index}"]`);
-    const rightLine = rightPanel?.querySelector(`.diff-line[data-line-index="${index}"]`);
+    const leftLine = leftPanel
+      ? leftPanel.querySelector(leftLineNum ? `.diff-line[data-line-num="${leftLineNum}"]` : `.diff-line[data-line-index="${index}"]`)
+      : null;
+    const rightLine = rightPanel
+      ? rightPanel.querySelector(rightLineNum ? `.diff-line[data-line-num="${rightLineNum}"]` : `.diff-line[data-line-index="${index}"]`)
+      : null;
     const offset = 12;
 
     if (leftPanel && leftLine) {
