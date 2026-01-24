@@ -153,6 +153,11 @@ const UI = (function () {
         handleCompare();
       }
     });
+
+    // Diff map and view toggles
+    if (elements.diffContainer) {
+      elements.diffContainer.addEventListener('click', handleDiffContainerClick);
+    }
   }
 
   /**
@@ -433,6 +438,7 @@ const UI = (function () {
     const pairEl = document.createElement('div');
     pairEl.className = 'diff-pair';
     pairEl.id = `diff-${pairId}`;
+    pairEl.dataset.pair = pairId;
 
     const header = document.createElement('div');
     header.className = 'diff-pair-header';
@@ -463,6 +469,22 @@ const UI = (function () {
     }
 
     header.appendChild(stats);
+
+    const actions = document.createElement('div');
+    actions.className = 'diff-pair-actions';
+
+    const changesOnlyLabel = typeof I18n !== 'undefined' ? I18n.t('diff.toggle.changesOnly') : 'Changes only';
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'btn-toggle-changes';
+    toggleBtn.type = 'button';
+    toggleBtn.setAttribute('aria-pressed', 'false');
+    toggleBtn.textContent = changesOnlyLabel;
+    actions.appendChild(toggleBtn);
+
+    const mapEl = createDiffMapElement(result);
+    actions.appendChild(mapEl);
+
+    header.appendChild(actions);
     pairEl.appendChild(header);
 
     const panels = document.createElement('div');
@@ -542,12 +564,17 @@ const UI = (function () {
       return fragment;
     }
 
-    lines.forEach(line => {
+    lines.forEach((line, index) => {
       const typeClass = getLineClass(line.type);
       const lineNumDisplay = line.lineNum !== null ? String(line.lineNum) : '';
 
       const lineEl = document.createElement('div');
       lineEl.className = `diff-line ${typeClass}`.trim();
+      lineEl.dataset.lineIndex = String(index);
+      lineEl.dataset.lineType = line.type;
+      if (line.lineNum !== null) {
+        lineEl.dataset.lineNum = String(line.lineNum);
+      }
 
       const lineNum = document.createElement('span');
       lineNum.className = 'line-number';
@@ -567,6 +594,151 @@ const UI = (function () {
     });
 
     return fragment;
+  }
+
+  /**
+   * 差分マップを生成
+   */
+  function createDiffMapElement(result) {
+    const map = document.createElement('div');
+    map.className = 'diff-map';
+    map.setAttribute('role', 'list');
+    const mapLabel = typeof I18n !== 'undefined' ? I18n.t('diff.map.aria') : 'Diff map';
+    map.setAttribute('aria-label', mapLabel);
+
+    const changeIndexes = [];
+    const totalLines = Math.max(result.left.length, result.right.length);
+    for (let i = 0; i < totalLines; i++) {
+      const left = result.left[i];
+      const right = result.right[i];
+      const leftType = left ? left.type : 'empty';
+      const rightType = right ? right.type : 'empty';
+      if (leftType !== 'unchanged' || rightType !== 'unchanged') {
+        if (leftType !== 'empty' || rightType !== 'empty') {
+          changeIndexes.push(i);
+        }
+      }
+    }
+
+    if (changeIndexes.length === 0) {
+      const empty = document.createElement('span');
+      empty.className = 'diff-map-empty';
+      empty.textContent = typeof I18n !== 'undefined' ? I18n.t('diff.map.empty') : 'No changes';
+      map.appendChild(empty);
+      return map;
+    }
+
+    changeIndexes.forEach(index => {
+      const left = result.left[index];
+      const right = result.right[index];
+      const leftLineNum = (left && left.lineNum !== null) ? left.lineNum : null;
+      const rightLineNum = (right && right.lineNum !== null) ? right.lineNum : null;
+      const lineLabel = formatLineLabel(leftLineNum, rightLineNum);
+      const type = getMapLineType(left, right);
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `diff-map-item ${type}`;
+      button.dataset.lineIndex = String(index);
+      if (leftLineNum !== null) {
+        button.dataset.leftLineNum = String(leftLineNum);
+      }
+      if (rightLineNum !== null) {
+        button.dataset.rightLineNum = String(rightLineNum);
+      }
+
+      const typeLabel = typeof I18n !== 'undefined'
+        ? I18n.t(`diff.type.${type}`)
+        : type;
+      const label = typeof I18n !== 'undefined'
+        ? I18n.t('diff.map.item', { line: lineLabel, type: typeLabel })
+        : `Line ${lineLabel}: ${typeLabel}`;
+      button.setAttribute('aria-label', label);
+
+      button.textContent = lineLabel;
+      map.appendChild(button);
+    });
+
+    return map;
+  }
+
+  function getMapLineType(left, right) {
+    if (right && right.type === 'added') return 'added';
+    if (left && left.type === 'removed') return 'removed';
+    if (left && left.type === 'changed') return 'changed';
+    if (right && right.type === 'changed') return 'changed';
+    return 'changed';
+  }
+
+  function formatLineLabel(leftLineNum, rightLineNum) {
+    if (leftLineNum !== null && rightLineNum !== null) {
+      if (leftLineNum === rightLineNum) {
+        return String(leftLineNum);
+      }
+      return `${leftLineNum}/${rightLineNum}`;
+    }
+    if (leftLineNum !== null) return String(leftLineNum);
+    if (rightLineNum !== null) return String(rightLineNum);
+    return '•';
+  }
+
+  /**
+   * Diffコンテナ内クリック処理（マップと切替）
+   */
+  function handleDiffContainerClick(e) {
+    const toggleBtn = e.target.closest('.btn-toggle-changes');
+    if (toggleBtn) {
+      const pair = toggleBtn.closest('.diff-pair');
+      if (!pair) return;
+      const isActive = pair.classList.toggle('changes-only');
+      toggleBtn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      return;
+    }
+
+    const mapItem = e.target.closest('.diff-map-item');
+    if (mapItem) {
+      const pair = mapItem.closest('.diff-pair');
+      if (!pair) return;
+      const index = Number(mapItem.dataset.lineIndex);
+      const leftLineNum = mapItem.dataset.leftLineNum || null;
+      const rightLineNum = mapItem.dataset.rightLineNum || null;
+      scrollToDiffLine(pair, index, leftLineNum, rightLineNum);
+    }
+  }
+
+  function scrollToDiffLine(pair, index, leftLineNum = null, rightLineNum = null) {
+    const leftPanel = pair.querySelector('.diff-panel[data-side="left"] .diff-content');
+    const rightPanel = pair.querySelector('.diff-panel[data-side="right"] .diff-content');
+    const leftLine = leftPanel
+      ? leftPanel.querySelector(leftLineNum ? `.diff-line[data-line-num="${leftLineNum}"]` : `.diff-line[data-line-index="${index}"]`)
+      : null;
+    const rightLine = rightPanel
+      ? rightPanel.querySelector(rightLineNum ? `.diff-line[data-line-num="${rightLineNum}"]` : `.diff-line[data-line-index="${index}"]`)
+      : null;
+    const offset = 12;
+
+    if (leftPanel && leftLine) {
+      scrollPanelToLine(leftPanel, leftLine, offset);
+      highlightDiffLine(leftLine);
+    }
+    if (rightPanel && rightLine) {
+      scrollPanelToLine(rightPanel, rightLine, offset);
+      highlightDiffLine(rightLine);
+    }
+  }
+
+  function scrollPanelToLine(panel, lineEl, offset) {
+    const panelRect = panel.getBoundingClientRect();
+    const lineRect = lineEl.getBoundingClientRect();
+    const delta = lineRect.top - panelRect.top;
+    panel.scrollTop = Math.max(panel.scrollTop + delta - offset, 0);
+  }
+
+  function highlightDiffLine(lineEl) {
+    lineEl.classList.add('is-target');
+    setTimeout(() => {
+      lineEl.classList.remove('is-target');
+    }, 1200);
   }
 
   /**

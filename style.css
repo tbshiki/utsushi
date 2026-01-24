@@ -629,6 +629,7 @@ a:focus-visible {
     background: var(--bg-tertiary);
     border-bottom: 1px solid var(--border-primary);
     transition: background-color var(--transition-normal), border-color var(--transition-normal);
+    gap: var(--space-md);
 }
 
 .diff-pair-title {
@@ -641,6 +642,80 @@ a:focus-visible {
     display: flex;
     gap: var(--space-md);
     font-size: 0.8rem;
+}
+
+.diff-pair-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.btn-toggle-changes {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-toggle-changes:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
+}
+
+.btn-toggle-changes[aria-pressed="true"] {
+    background: var(--accent-glow);
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+.diff-map {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    max-width: 320px;
+}
+
+.diff-map-item {
+    min-width: 24px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    border: 1px solid var(--border-primary);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.diff-map-item.added {
+    border-color: var(--diff-added-border);
+    color: var(--diff-added-text);
+}
+
+.diff-map-item.removed {
+    border-color: var(--diff-removed-border);
+    color: var(--diff-removed-text);
+}
+
+.diff-map-item.changed {
+    border-color: var(--diff-changed-border);
+    color: var(--diff-changed-text);
+}
+
+.diff-map-item:hover {
+    background: var(--bg-hover);
+}
+
+.diff-map-empty {
+    font-size: 0.75rem;
+    color: var(--text-muted);
 }
 
 .diff-stats .stat {
@@ -755,6 +830,11 @@ a:focus-visible {
     color: var(--diff-changed-text);
 }
 
+.diff-line.is-target {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: -2px;
+}
+
 /* Word-level diff highlights */
 .word-added {
     background: rgba(46, 160, 67, 0.4);
@@ -788,6 +868,11 @@ a:focus-visible {
     padding: var(--space-xl);
     text-align: center;
     color: var(--text-muted);
+}
+
+.diff-pair.changes-only .diff-line[data-line-type="unchanged"],
+.diff-pair.changes-only .diff-line[data-line-type="empty"] {
+    display: none;
 }
 
 /* Footer - Compact with collapsible privacy */
@@ -1162,6 +1247,20 @@ a:focus-visible {
     .diff-panel[data-side="left"] {
         border-right: none;
         border-bottom: 1px solid var(--border-primary);
+    }
+
+    .diff-pair-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .diff-pair-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .diff-map {
+        max-width: 100%;
     }
 
     .footer-content {
