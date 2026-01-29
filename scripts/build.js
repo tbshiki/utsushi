@@ -1,6 +1,7 @@
 /**
  * Build script for Cloudflare Pages.
- * Copies only required assets into dist/ and replaces CSP nonce.
+ * Copies only required assets into dist/.
+ * CSP nonce replacement is handled at runtime by middleware unless opted in.
  */
 
 const fs = require('fs');
@@ -9,6 +10,7 @@ const { spawnSync } = require('child_process');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const DIST_DIR = path.join(ROOT_DIR, 'dist');
+const CSP_NONCE_MODE = process.env.CSP_NONCE_MODE || 'dynamic';
 
 const FILES_TO_COPY = [
   'index.html',
@@ -83,7 +85,11 @@ function main() {
     copyDir(src, dest);
   }
 
-  runCspNonceReplacement();
+  if (CSP_NONCE_MODE === 'static') {
+    runCspNonceReplacement();
+  } else {
+    console.log('🔐 CSP nonce replacement skipped (dynamic middleware mode).');
+  }
   console.log('✅ Build completed');
 }
 
