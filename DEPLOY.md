@@ -55,15 +55,17 @@
 3. 使用したいドメインを入力
 4. DNS設定を行う
 
-### アナリティクス（Zaraz）
+### アナリティクス（GA4 / Clarity）
 
-GA4 と Microsoft Clarity は Cloudflare Zaraz で管理します。
-ビルド時の環境変数は不要です。
+GA4 と Microsoft Clarity は **ビルド時に index.html へ注入**します。
+Cloudflare Pages の環境変数に ID を設定してください（任意）。
 
 **Cloudflare Pages での設定方法：**
 1. Cloudflare Dashboard > Pages > utsushi プロジェクト
-2. 「設定」タブ > 「Zaraz」
-3. Google Analytics 4 / Microsoft Clarity を追加して ID を設定
+2. 「設定」タブ > 「環境変数」
+3. 以下を追加
+   - `GA_ID`（例: `G-XXXXXXXXXX`）
+   - `CLARITY_ID`（例: `abcd1234ef`）
 
 **ビルドコマンドの設定：**
 ビルドコマンドは同じです：

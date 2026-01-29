@@ -146,6 +146,16 @@ npx serve dist
 CSP_NONCE_MODE=static node scripts/build.js
 ```
 
+### アナリティクス設定（GA4 / Clarity）
+
+GA4 と Microsoft Clarity はビルド時に `index.html` へ注入します。
+Cloudflare Pages の環境変数で ID を設定してください（任意）。
+
+```bash
+# 例: どちらか片方でもOK
+GA_ID=G-XXXXXXXXXX CLARITY_ID=abcd1234ef node scripts/build.js
+```
+
 ## デプロイ
 
 デプロイ手順は [DEPLOY.md](DEPLOY.md) を参照してください。
@@ -168,10 +178,10 @@ Copyright (c) 2026 tbshiki
 - Pages Functions による動的 CSP nonce を追加
 - build.js の nonce 置換を既定でスキップ（静的は任意）
 - _headers のセキュリティ/キャッシュを最適化
+ - GA4 / Clarity をビルド時に注入する設定を追加
 
 ### v0.2.6 (2026-01-24)
 - 入力エリアに行番号表示を追加
-- Zaraz 運用に合わせてアナリティクス注入を廃止
 - CSP nonce 置換スクリプトを整理し失敗時に停止
 - CSP 許可先を整理・更新
 
