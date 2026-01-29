@@ -39,6 +39,9 @@
 | ビルドコマンド | `node scripts/build.js` |
 | ビルド出力ディレクトリ | `dist` |
 
+> **補足**: 通常は動的nonceのためビルド時の置換は不要です。旧方式が必要な場合のみ
+> `CSP_NONCE_MODE=static node scripts/build.js` を使用してください。
+
 
 「保存してデプロイ」をクリック
 デプロイ完了まで数分待機
@@ -70,12 +73,12 @@ GA4 と Microsoft Clarity は Cloudflare Zaraz で管理します。
 | ビルドコマンド | `node scripts/build.js` |
 | ビルド出力ディレクトリ | `dist` |
 
-> **注意**: CSPは `_headers` に移行しています。nonceはビルド時に自動注入されます。
+> **注意**: CSPは `_headers` にあります。nonceは Pages Functions の `_middleware.js` が動的に注入します。
 > **注意**: ローカル開発時はCSPヘッダーが付与されないため、本番と挙動が異なる場合があります。
 
 ### 注意事項
 
-- Functions（サーバーレス関数）は不要
+- Functions（サーバーレス関数）を使用（`functions/_middleware.js`）
 - Workers連携は不要
 - すべて静的配信で完結
 - CDNスクリプトのバージョンを変更した場合は、SRIハッシュも更新する
