@@ -1,6 +1,6 @@
 # utsushi - テキスト差分比較ツール
 
-> 複数テキストをブラウザ内で比較。完全ローカル処理でプライバシー保護。
+複数テキストをブラウザ内で比較。完全ローカル処理でプライバシー保護
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -17,6 +17,7 @@
 - 🎨 **ダーク/ライトモード** - システム設定に連動、手動切り替え可能
 - 📊 **リアルタイム統計** - 文字数・単語数・行数をリアルタイム表示
 - 📱 **レスポンシブ対応** - PC・タブレット・スマートフォンで利用可能
+- 🛡️ **動的 CSP nonce** - Pages Functions で nonce を動的注入
 
 ## 使い方
 
@@ -90,8 +91,10 @@ utsushi/
 │   ├── ja.json     # 日本語
 │   └── en.json     # English
 ├── scripts/        # ビルドスクリプト
-│   ├── build.js     # dist生成
-│   └── replace-csp-nonce.js  # CSP nonce 置換
+│   ├── build.js     # dist生成（nonceは通常スキップ）
+│   └── replace-csp-nonce.js  # CSP nonce 置換（任意）
+├── functions/      # Pages Functions
+│   └── _middleware.js  # 動的CSP nonce + リダイレクト
 ├── dist/           # ビルド出力（配信対象）
 ├── README.md       # このファイル
 └── DEPLOY.md       # デプロイ手順
@@ -115,10 +118,8 @@ git clone https://github.com/tbshiki/utsushi.git
 cd utsushi
 
 # ローカルサーバーを起動
-npx serve .
+npx serve dist
 
-# または
-npx http-server .
 ```
 
 ブラウザで http://localhost:3000 にアクセス
@@ -133,6 +134,16 @@ node scripts/build.js
 
 # dist/ を確認
 npx serve dist
+```
+
+### CSP nonce について
+
+本番では Pages Functions の `_middleware.js` が `__CSP_NONCE__` を動的に差し替えます。
+ビルド時の置換は通常不要ですが、必要な場合のみ下記で有効化できます。
+
+```bash
+# 旧方式（静的nonce）
+CSP_NONCE_MODE=static node scripts/build.js
 ```
 
 ## デプロイ
@@ -152,6 +163,11 @@ MIT License
 Copyright (c) 2026 tbshiki
 
 ## バージョン履歴
+
+### v0.2.7 (2026-01-29)
+- Pages Functions による動的 CSP nonce を追加
+- build.js の nonce 置換を既定でスキップ（静的は任意）
+- _headers のセキュリティ/キャッシュを最適化
 
 ### v0.2.6 (2026-01-24)
 - 入力エリアに行番号表示を追加
@@ -202,6 +218,12 @@ Copyright (c) 2026 tbshiki
 - 全組み合わせ差分比較
 - CSPによる完全ローカル処理
 
+
+## 関連プロジェクト
+
+- [zouka](https://zouka.taptoclicks.com) - 画像サイズ変換・圧縮ツール
+
+
 ---
 
-Made with ❤️ for better text comparison
+Made with ❤️ by [taptoclicks.com](https://taptoclicks.com)
